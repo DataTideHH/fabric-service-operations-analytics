@@ -1,0 +1,90 @@
+name: Python quality
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fabric-service-operations-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Python 3.12 · ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-24.04
+          - windows-2025
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install project and quality dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-dev.txt
+
+      - name: Compile Python sources
+        run: python -m compileall -q src tests
+
+      - name: Run Ruff lint checks
+        run: python -m ruff check src tests
+
+      - name: Verify Ruff formatting
+        run: python -m ruff format --check src tests
+
+      - name: Run pytest suite
+        run: python -m pytest
+
+      - name: Reproduce committed synthetic fixture
+        run: python -m service_operations generate --output .ci-output/generated.csv
+
+      - name: Compare generated and committed fixture
+        shell: python
+        run: |
+          from pathlib import Path
+
+          generated = Path(".ci-output/generated.csv").read_bytes()
+          committed = Path("data/raw/service_requests.csv").read_bytes()
+          if generated != committed:
+              raise SystemExit("Generated fixture differs from committed fixture.")
+          print("Synthetic fixture reproduction passed.")
+
+      - name: Validate expected data-quality controls
+        run: >-
+          python -m service_operations validate
+          --input data/raw/service_requests.csv
+          --contract contracts/service_requests.contract.json
+          --report .ci-output/validation_report.json
+          --expect-total 100
+          --expect-invalid 11
+
+      - name: Upload validation evidence
+        uses: actions/upload-artifact@v7
+        with:
+          name: validation-evidence-${{ matrix.os }}
+          path: .ci-output/
+          if-no-files-found: error
+          retention-days: 3
