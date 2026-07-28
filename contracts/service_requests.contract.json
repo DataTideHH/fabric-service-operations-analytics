@@ -1,0 +1,144 @@
+{
+  "contract_name": "service_requests",
+  "contract_version": "1.0.0",
+  "description": "Data contract for synthetic IT service-operation requests used by the local Fabric portfolio baseline.",
+  "record_count": 100,
+  "expected_invalid_rows": 11,
+  "primary_key": [
+    "ticket_id"
+  ],
+  "timestamp_format": "%Y-%m-%dT%H:%M:%SZ",
+  "columns": [
+    {
+      "name": "ticket_id",
+      "type": "string",
+      "nullable": false,
+      "unique": true,
+      "pattern": "^SR-\\d{6}$"
+    },
+    {
+      "name": "created_at",
+      "type": "datetime",
+      "nullable": false
+    },
+    {
+      "name": "closed_at",
+      "type": "datetime",
+      "nullable": true
+    },
+    {
+      "name": "priority",
+      "type": "string",
+      "nullable": false,
+      "allowed_values": [
+        "P1",
+        "P2",
+        "P3",
+        "P4"
+      ]
+    },
+    {
+      "name": "category",
+      "type": "string",
+      "nullable": false,
+      "allowed_values": [
+        "access",
+        "application",
+        "hardware",
+        "network",
+        "reporting"
+      ]
+    },
+    {
+      "name": "assigned_team",
+      "type": "string",
+      "nullable": false,
+      "allowed_values": [
+        "business_apps",
+        "data_platform",
+        "network_ops",
+        "service_desk",
+        "workplace"
+      ]
+    },
+    {
+      "name": "status",
+      "type": "string",
+      "nullable": false,
+      "allowed_values": [
+        "closed",
+        "open"
+      ]
+    },
+    {
+      "name": "sla_target_minutes",
+      "type": "integer",
+      "nullable": false,
+      "minimum": 1
+    },
+    {
+      "name": "resolution_minutes",
+      "type": "integer",
+      "nullable": true,
+      "minimum": 0
+    },
+    {
+      "name": "reopened_count",
+      "type": "integer",
+      "nullable": false,
+      "minimum": 0,
+      "maximum": 5
+    },
+    {
+      "name": "escalated",
+      "type": "boolean",
+      "nullable": false
+    },
+    {
+      "name": "customer_segment",
+      "type": "string",
+      "nullable": false,
+      "allowed_values": [
+        "enterprise",
+        "internal",
+        "smb"
+      ]
+    },
+    {
+      "name": "source_system",
+      "type": "string",
+      "nullable": false,
+      "allowed_values": [
+        "service_portal"
+      ]
+    }
+  ],
+  "business_rules": {
+    "sla_target_by_priority": {
+      "P1": 240,
+      "P2": 480,
+      "P3": 1440,
+      "P4": 2880
+    },
+    "closed_status_requires": [
+      "closed_at",
+      "resolution_minutes"
+    ],
+    "open_status_requires_null": [
+      "closed_at",
+      "resolution_minutes"
+    ],
+    "closed_at_not_before_created_at": true
+  },
+  "safety": {
+    "synthetic_only": true,
+    "forbidden_columns": [
+      "name",
+      "email",
+      "phone",
+      "address",
+      "customer_name",
+      "user_name"
+    ]
+  }
+}
