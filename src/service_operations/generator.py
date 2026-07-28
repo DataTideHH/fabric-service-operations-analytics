@@ -127,9 +127,7 @@ def _inject_known_anomalies(rows: list[dict[str, object]]) -> None:
         "%Y-%m-%dT%H:%M:%SZ",
     ).replace(tzinfo=UTC)
     rows[indexes[6]]["status"] = "closed"
-    rows[indexes[6]]["closed_at"] = _format_timestamp(
-        created_negative + timedelta(minutes=30)
-    )
+    rows[indexes[6]]["closed_at"] = _format_timestamp(created_negative + timedelta(minutes=30))
     rows[indexes[6]]["resolution_minutes"] = -5
 
     created_reverse = datetime.strptime(
@@ -137,9 +135,7 @@ def _inject_known_anomalies(rows: list[dict[str, object]]) -> None:
         "%Y-%m-%dT%H:%M:%SZ",
     ).replace(tzinfo=UTC)
     rows[indexes[7]]["status"] = "closed"
-    rows[indexes[7]]["closed_at"] = _format_timestamp(
-        created_reverse - timedelta(minutes=15)
-    )
+    rows[indexes[7]]["closed_at"] = _format_timestamp(created_reverse - timedelta(minutes=15))
     rows[indexes[7]]["resolution_minutes"] = 60
 
     rows[indexes[8]]["escalated"] = "maybe"
