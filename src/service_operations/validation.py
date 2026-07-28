@@ -33,9 +33,7 @@ class ValidationResult:
             "total_rows": self.total_rows,
             "valid_rows": self.valid_rows,
             "invalid_rows": self.invalid_rows,
-            "valid_rate": round(self.valid_rows / self.total_rows, 4)
-            if self.total_rows
-            else 0.0,
+            "valid_rate": round(self.valid_rows / self.total_rows, 4) if self.total_rows else 0.0,
             "issue_counts": self.issue_counts,
         }
 
