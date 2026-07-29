@@ -117,8 +117,7 @@ def _type_valid_records(valid: pd.DataFrame) -> pd.DataFrame:
     typed["sla_met"] = pd.Series(pd.NA, index=typed.index, dtype="boolean")
     closed_mask = typed["status"].eq("closed")
     typed.loc[closed_mask, "sla_met"] = (
-        typed.loc[closed_mask, "resolution_minutes"]
-        <= typed.loc[closed_mask, "sla_target_minutes"]
+        typed.loc[closed_mask, "resolution_minutes"] <= typed.loc[closed_mask, "sla_target_minutes"]
     ).astype("boolean")
 
     return typed.reset_index(drop=True)
@@ -209,12 +208,8 @@ def _build_fact_table(
         errors="coerce",
     ).astype("Int64")
     fact["team_key"] = fact["assigned_team"].map(dim_team.set_index("assigned_team")["team_key"])
-    fact["category_key"] = fact["category"].map(
-        dim_category.set_index("category")["category_key"]
-    )
-    fact["priority_key"] = fact["priority"].map(
-        dim_priority.set_index("priority")["priority_key"]
-    )
+    fact["category_key"] = fact["category"].map(dim_category.set_index("category")["category_key"])
+    fact["priority_key"] = fact["priority"].map(dim_priority.set_index("priority")["priority_key"])
 
     for column in ["team_key", "category_key", "priority_key"]:
         if fact[column].isna().any():
