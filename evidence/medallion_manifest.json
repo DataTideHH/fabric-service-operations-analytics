@@ -4,7 +4,7 @@
     "foreign_keys_complete": true,
     "valid_equals_fact": true
   },
-  "ingestion_batch_id": "0975185eb13ee5f5",
+  "ingestion_batch_id": "292ed8fb2857e392",
   "issue_counts": {
     "closed_before_created": 1,
     "closed_missing_closed_at": 1,
@@ -18,30 +18,32 @@
     "sla_priority_mismatch": 1
   },
   "kpis": {
-    "average_resolution_minutes": 1653.75,
-    "closed_requests": 73,
-    "escalated_requests": 10,
-    "escalation_rate": 0.1124,
-    "median_resolution_minutes": 1320.0,
-    "open_backlog": 16,
-    "reopen_rate": 0.2135,
-    "reopened_requests": 19,
-    "sla_compliance_rate": 0.4247,
-    "sla_eligible_requests": 73,
-    "sla_met_requests": 31,
-    "total_requests": 89
+    "average_resolution_minutes": 835.84,
+    "closed_requests": 833,
+    "escalated_requests": 85,
+    "escalation_rate": 0.0859,
+    "median_resolution_minutes": 694.0,
+    "open_backlog": 156,
+    "open_backlog_rate": 0.1577,
+    "reopen_eligible_requests": 833,
+    "reopen_rate": 0.0576,
+    "reopened_requests": 48,
+    "sla_compliance_rate": 0.9592,
+    "sla_eligible_requests": 833,
+    "sla_met_requests": 799,
+    "total_requests": 989
   },
-  "pipeline_version": "0.2.0",
+  "pipeline_version": "0.2.1",
   "row_counts": {
-    "bronze": 100,
+    "bronze": 1000,
     "dim_category": 5,
-    "dim_date": 69,
+    "dim_date": 91,
     "dim_priority": 4,
     "dim_team": 5,
-    "gold_fact": 89,
+    "gold_fact": 989,
     "silver_issues": 11,
     "silver_rejected": 11,
-    "silver_valid": 89
+    "silver_valid": 989
   },
   "source_file": "service_requests.csv"
 }
