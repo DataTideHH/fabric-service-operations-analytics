@@ -13,7 +13,7 @@ import pandas as pd
 from service_operations.contracts import load_contract
 from service_operations.validation import ValidationResult, validate_dataframe
 
-PIPELINE_VERSION = "0.2.0"
+PIPELINE_VERSION = "0.2.1"
 DEFAULT_INGESTED_AT = "2026-07-29T00:00:00Z"
 PRIORITY_ORDER = ["P1", "P2", "P3", "P4"]
 INTEGER_KPIS = {
@@ -23,6 +23,7 @@ INTEGER_KPIS = {
     "sla_eligible_requests",
     "sla_met_requests",
     "escalated_requests",
+    "reopen_eligible_requests",
     "reopened_requests",
 }
 RAW_COLUMNS = [
@@ -238,6 +239,10 @@ def _build_fact_table(
     ].reset_index(drop=True)
 
 
+def _rate(numerator: int, denominator: int) -> float:
+    return round(numerator / denominator, 4) if denominator else 0.0
+
+
 def _build_kpis(valid: pd.DataFrame) -> pd.DataFrame:
     closed = valid.loc[valid["status"].eq("closed")]
     total_requests = len(valid)
@@ -245,7 +250,7 @@ def _build_kpis(valid: pd.DataFrame) -> pd.DataFrame:
     open_backlog = total_requests - closed_requests
     sla_met_requests = int(closed["sla_met"].sum())
     escalated_requests = int(valid["escalated"].sum())
-    reopened_requests = int((valid["reopened_count"] > 0).sum())
+    reopened_requests = int((closed["reopened_count"] > 0).sum())
 
     return pd.DataFrame(
         [
@@ -253,9 +258,10 @@ def _build_kpis(valid: pd.DataFrame) -> pd.DataFrame:
                 "total_requests": total_requests,
                 "closed_requests": closed_requests,
                 "open_backlog": open_backlog,
+                "open_backlog_rate": _rate(open_backlog, total_requests),
                 "sla_eligible_requests": closed_requests,
                 "sla_met_requests": sla_met_requests,
-                "sla_compliance_rate": round(sla_met_requests / closed_requests, 4),
+                "sla_compliance_rate": _rate(sla_met_requests, closed_requests),
                 "average_resolution_minutes": round(
                     float(closed["resolution_minutes"].mean()),
                     2,
@@ -265,9 +271,10 @@ def _build_kpis(valid: pd.DataFrame) -> pd.DataFrame:
                     2,
                 ),
                 "escalated_requests": escalated_requests,
-                "escalation_rate": round(escalated_requests / total_requests, 4),
+                "escalation_rate": _rate(escalated_requests, total_requests),
+                "reopen_eligible_requests": closed_requests,
                 "reopened_requests": reopened_requests,
-                "reopen_rate": round(reopened_requests / total_requests, 4),
+                "reopen_rate": _rate(reopened_requests, closed_requests),
             }
         ]
     )

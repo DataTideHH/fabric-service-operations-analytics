@@ -1,14 +1,14 @@
 # Data-Quality Rules
 
-The fixture contains 100 rows and a bounded set of intentional defects.
+The deterministic generator creates 1,000 source rows and applies a bounded set of ten intentional anomaly mutations. One mutation duplicates a clean identifier, so both duplicate occurrences are rejected and the final invalid-row count is eleven.
 
 Expected controls:
 
 ```text
-total rows:   100
-valid rows:    89
-invalid rows:  11
-valid rate:  89.0%
+total rows:    1,000
+valid rows:      989
+invalid rows:     11
+valid rate:     98.9%
 ```
 
 ## Expected issue counts
@@ -37,4 +37,4 @@ The duplicate identifier affects two rows, so both rows are invalid.
 - All duplicate primary-key occurrences are rejected.
 - Business-rule checks are separated from type checks.
 - The validation report is deterministic and machine-readable.
-- CI compares a freshly generated fixture byte-for-byte with the committed CSV.
+- CI generates the source on both operating systems and verifies its complete SHA-256 fingerprint before validation.

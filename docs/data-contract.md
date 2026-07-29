@@ -2,9 +2,11 @@
 
 The source of truth is [`contracts/service_requests.contract.json`](../contracts/service_requests.contract.json).
 
-## Grain
+## Scenario and grain
 
-One row represents one synthetic service request at its current lifecycle state.
+The contract describes a deterministic synthetic 90-day sample for one customer environment and five operational teams. The generator creates 1,000 source rows; one row represents one service request at its current lifecycle state.
+
+The documented KPI ranges are constraints for this synthetic portfolio scenario, not universal service-management benchmarks.
 
 ## Primary key
 
@@ -25,7 +27,7 @@ All occurrences of a duplicated identifier are rejected. The validator does not 
 | `status` | Lifecycle state | `open` or `closed` |
 | `sla_target_minutes` | Resolution target | Must match priority mapping |
 | `resolution_minutes` | Resolution duration | Non-negative; closed requests only |
-| `reopened_count` | Number of reopenings | Integer from 0 to 5 |
+| `reopened_count` | Number of reopenings | Integer from 0 to 5; zero for open requests |
 | `escalated` | Escalation marker | `true` or `false` |
 | `customer_segment` | Synthetic reporting segment | Controlled domain |
 | `source_system` | Source identifier | `service_portal` |
@@ -38,6 +40,12 @@ All occurrences of a duplicated identifier are rejected. The validator does not 
 | P2 | 480 |
 | P3 | 1,440 |
 | P4 | 2,880 |
+
+## KPI eligibility
+
+- SLA compliance uses closed, SLA-eligible tickets.
+- Reopen rate uses closed tickets because open tickets cannot yet be reopened.
+- Escalation rate and backlog rate use all accepted tickets.
 
 ## Privacy and safety
 

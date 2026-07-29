@@ -6,12 +6,13 @@
 
 A bounded DataTideHH portfolio project that prepares synthetic IT service-operations data for a later Microsoft Fabric implementation.
 
-The repository now contains a reproducible local Bronze/Silver/Gold pipeline. It preserves raw records with ingestion metadata, separates typed valid records from auditable rejections, publishes a small star schema and reconciles operational KPIs before any cloud resources are used.
+The repository contains a reproducible local Bronze/Silver/Gold pipeline. It generates a deterministic 90-day operating scenario, preserves raw records with ingestion metadata, separates typed valid records from auditable rejections, publishes a small star schema and reconciles operational KPIs before any cloud resources are used.
 
 ## Current status
 
 ```text
 Local data contract and quality controls: implemented
+Calibrated synthetic operating scenario: implemented
 Local Bronze/Silver/Gold pipeline: implemented
 Local Parquet star schema and KPI evidence: implemented
 Cross-platform CI: implemented
@@ -24,17 +25,19 @@ This distinction is deliberate. The project implements and tests the transformat
 
 ## Business scenario
 
-The synthetic dataset represents service requests handled by operational teams. It supports analysis of:
+The deterministic generator models one customer environment, five operational teams and a 90-day analysis window. Category, priority and team assignment are correlated; SLA breaches influence escalation probability; reopenings occur only after closure.
+
+The dataset supports analysis of:
 
 - request volumes by priority, category and team
-- SLA compliance
+- SLA compliance and breach concentration
 - resolution time
 - escalations
 - reopenings
 - open backlog
 - data-quality failures before reporting
 
-No customer, employee or operational production data is included.
+No customer, employee or operational production data is included. The documented KPI ranges are design constraints for this synthetic scenario, not claimed industry benchmarks.
 
 ## Verified controls
 
@@ -42,41 +45,55 @@ No customer, employee or operational production data is included.
 
 | Control | Verified value |
 |---|---:|
-| Bronze source rows | 100 |
-| Silver valid rows | 89 |
+| Generated source rows | 1,000 |
+| Bronze source rows | 1,000 |
+| Silver valid rows | 989 |
 | Silver rejected rows | 11 |
 | Silver issue records | 11 |
-| Gold fact rows | 89 |
+| Gold fact rows | 989 |
 | Duplicate identifier occurrences | 2 |
-| Date dimension rows | 69 |
+| Date dimension rows | 91 |
 | Team dimension rows | 5 |
 | Category dimension rows | 5 |
 | Priority dimension rows | 4 |
 
-The pipeline fails when Bronze does not reconcile to valid plus rejected rows, when Silver valid records do not reconcile to the Gold fact table, or when a Gold foreign key is unresolved.
+The pipeline fails when Bronze does not reconcile to valid plus rejected rows, when Silver valid records do not reconcile to the Gold fact table, when a Gold foreign key is unresolved or when generated evidence differs from the committed text evidence.
 
 ### Gold KPI evidence
 
 | KPI | Verified value |
 |---|---:|
-| Total accepted requests | 89 |
-| Closed requests | 73 |
-| Open backlog | 16 |
-| SLA-met requests | 31 |
-| SLA compliance rate | 42.47% |
-| Average resolution time | 1,653.75 minutes |
-| Median resolution time | 1,320 minutes |
-| Escalated requests | 10 |
-| Escalation rate | 11.24% |
-| Reopened requests | 19 |
-| Reopen rate | 21.35% |
+| Total accepted requests | 989 |
+| Closed requests | 833 |
+| Open backlog | 156 |
+| Open backlog rate | 15.77% |
+| SLA-met requests | 799 |
+| SLA compliance rate | 95.92% |
+| Average resolution time | 835.84 minutes |
+| Median resolution time | 694 minutes |
+| Escalated requests | 85 |
+| Escalation rate | 8.59% |
+| Reopened requests | 48 |
+| Reopen rate | 5.76% |
 
-The committed text evidence is stored in [`evidence/`](evidence/) and is regenerated and compared in CI.
+KPI denominators are explicit:
+
+```text
+SLA compliance = SLA-met closed tickets / SLA-eligible closed tickets
+Reopen rate     = closed tickets reopened at least once / closed tickets
+Escalation rate = escalated accepted tickets / accepted tickets
+Backlog rate    = open accepted tickets / accepted tickets
+```
+
+The committed text evidence is stored in [`evidence/`](evidence/) and regenerated in CI.
 
 ## Implemented local architecture
 
 ```text
-synthetic raw CSV
+deterministic synthetic generator
+      |
+      v
+generated service_requests.csv
       |
       v
 Bronze Parquet
@@ -107,7 +124,7 @@ reconciled KPI CSV + manifest JSON
 planned Fabric Lakehouse / Direct Lake / Power BI implementation
 ```
 
-See [`docs/architecture.md`](docs/architecture.md), [`docs/local-medallion-pipeline.md`](docs/local-medallion-pipeline.md) and [`docs/fabric-adoption-plan.md`](docs/fabric-adoption-plan.md).
+See [`docs/architecture.md`](docs/architecture.md), [`docs/data-contract.md`](docs/data-contract.md), [`docs/local-medallion-pipeline.md`](docs/local-medallion-pipeline.md) and [`docs/fabric-adoption-plan.md`](docs/fabric-adoption-plan.md).
 
 ## Quick start
 
@@ -121,13 +138,16 @@ python -m pip install -r requirements-dev.txt
 python -m pytest
 ```
 
-Build all local layers:
+Generate the deterministic source and build all local layers:
 
 ```powershell
+python -m service_operations generate `
+  --output ".ci-output\service_requests.csv"
+
 python -m service_operations build-medallion `
-  --input "data/raw/service_requests.csv" `
-  --contract "contracts/service_requests.contract.json" `
-  --output ".ci-output/medallion"
+  --input ".ci-output\service_requests.csv" `
+  --contract "contracts\service_requests.contract.json" `
+  --output ".ci-output\medallion"
 ```
 
 ### macOS and Linux
@@ -141,8 +161,11 @@ python -m pytest
 ```
 
 ```bash
+python -m service_operations generate \
+  --output .ci-output/service_requests.csv
+
 python -m service_operations build-medallion \
-  --input data/raw/service_requests.csv \
+  --input .ci-output/service_requests.csv \
   --contract contracts/service_requests.contract.json \
   --output .ci-output/medallion
 ```
@@ -164,14 +187,15 @@ medallion/
 └── medallion_manifest.json
 ```
 
-## Reproduce the source fixture
+## Deterministic source evidence
 
-```bash
-python -m service_operations generate \
-  --output .ci-output/generated-service-requests.csv
+The generated source is not committed as a large derived CSV. Tests and GitHub Actions verify its complete SHA-256 fingerprint on Ubuntu and Windows:
+
+```text
+292ed8fb2857e3927936a5b3ca002492b146875d04baee77a9322de287db8914
 ```
 
-The test suite verifies that generated bytes match the committed source fixture on Ubuntu and Windows.
+See [`data/README.md`](data/README.md).
 
 ## Repository structure
 
@@ -179,7 +203,7 @@ The test suite verifies that generated bytes match the committed source fixture 
 fabric-service-operations-analytics/
 ├── .github/workflows/python-quality.yml
 ├── contracts/service_requests.contract.json
-├── data/raw/service_requests.csv
+├── data/README.md
 ├── docs/
 │   ├── architecture.md
 │   ├── data-contract.md
@@ -204,11 +228,12 @@ The GitHub Actions matrix runs Python 3.12 on Ubuntu 24.04 and Windows 2025. Eac
 2. compiles Python sources
 3. runs Ruff lint and format checks
 4. runs the complete pytest suite
-5. regenerates and byte-compares the synthetic source fixture
-6. validates the 100/89/11 data-quality controls
-7. builds every local Bronze/Silver/Gold output
-8. verifies row reconciliation, foreign keys, KPIs and committed evidence
-9. uploads short-lived Parquet, CSV and JSON evidence
+5. generates the deterministic 1,000-row source
+6. verifies the complete source fingerprint
+7. validates the 1,000/989/11 data-quality controls
+8. builds every local Bronze/Silver/Gold output
+9. verifies row reconciliation, foreign keys, KPI ranges and committed evidence
+10. uploads short-lived Parquet, CSV and JSON evidence
 
 ## Scope boundaries
 

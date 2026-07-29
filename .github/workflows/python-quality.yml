@@ -58,33 +58,37 @@ jobs:
       - name: Run pytest suite
         run: python -m pytest
 
-      - name: Reproduce committed synthetic fixture
-        run: python -m service_operations generate --output .ci-output/generated.csv
+      - name: Generate deterministic synthetic source
+        run: >-
+          python -m service_operations generate
+          --output .ci-output/service_requests.csv
 
-      - name: Compare generated and committed fixture
+      - name: Verify generated source fingerprint
         shell: python
         run: |
+          import hashlib
           from pathlib import Path
 
-          generated = Path(".ci-output/generated.csv").read_bytes()
-          committed = Path("data/raw/service_requests.csv").read_bytes()
-          if generated != committed:
-              raise SystemExit("Generated fixture differs from committed fixture.")
-          print("Synthetic fixture reproduction passed.")
+          source = Path(".ci-output/service_requests.csv").read_bytes()
+          digest = hashlib.sha256(source).hexdigest()
+          expected = "292ed8fb2857e3927936a5b3ca002492b146875d04baee77a9322de287db8914"
+          if digest != expected:
+              raise SystemExit(f"Unexpected generated source fingerprint: {digest}")
+          print("Synthetic source fingerprint passed.")
 
       - name: Validate expected data-quality controls
         run: >-
           python -m service_operations validate
-          --input data/raw/service_requests.csv
+          --input .ci-output/service_requests.csv
           --contract contracts/service_requests.contract.json
           --report .ci-output/validation_report.json
-          --expect-total 100
+          --expect-total 1000
           --expect-invalid 11
 
       - name: Build local Medallion pipeline
         run: >-
           python -m service_operations build-medallion
-          --input data/raw/service_requests.csv
+          --input .ci-output/service_requests.csv
           --contract contracts/service_requests.contract.json
           --output .ci-output/medallion
 
@@ -102,17 +106,33 @@ jobs:
           )
           if generated != committed:
               raise SystemExit("Generated Medallion manifest differs from committed evidence.")
-          if generated["row_counts"]["bronze"] != 100:
-              raise SystemExit("Unexpected Bronze row count.")
-          if generated["row_counts"]["silver_valid"] != 89:
-              raise SystemExit("Unexpected Silver valid row count.")
-          if generated["row_counts"]["silver_rejected"] != 11:
-              raise SystemExit("Unexpected Silver rejected row count.")
-          if generated["row_counts"]["gold_fact"] != 89:
-              raise SystemExit("Unexpected Gold fact row count.")
+
+          expected_counts = {
+              "bronze": 1000,
+              "silver_valid": 989,
+              "silver_rejected": 11,
+              "gold_fact": 989,
+          }
+          for key, expected in expected_counts.items():
+              if generated["row_counts"][key] != expected:
+                  raise SystemExit(f"Unexpected {key} row count.")
+
+          kpis = generated["kpis"]
+          ranges = {
+              "sla_compliance_rate": (0.93, 0.96),
+              "reopen_rate": (0.05, 0.09),
+              "escalation_rate": (0.07, 0.12),
+              "open_backlog_rate": (0.10, 0.18),
+          }
+          for key, (lower, upper) in ranges.items():
+              if not lower <= kpis[key] <= upper:
+                  raise SystemExit(f"{key} is outside its documented design range.")
+
+          if kpis["reopen_eligible_requests"] != kpis["closed_requests"]:
+              raise SystemExit("Reopen KPI denominator is not the closed-ticket population.")
           if not all(generated["controls"].values()):
               raise SystemExit("One or more Medallion reconciliation controls failed.")
-          print("Medallion controls and evidence reconciliation passed.")
+          print("Medallion controls, KPI ranges and evidence reconciliation passed.")
 
       - name: Upload validation and Medallion evidence
         uses: actions/upload-artifact@v7

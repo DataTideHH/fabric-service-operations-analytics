@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 from service_operations.contracts import load_contract
-from service_operations.generator import generate_dataframe
+from service_operations.generator import generate_dataframe, write_dataset
 from service_operations.validation import (
     validate_dataframe,
     validate_file,
@@ -12,7 +12,6 @@ from service_operations.validation import (
 )
 
 CONTRACT_PATH = Path("contracts/service_requests.contract.json")
-FIXTURE_PATH = Path("data/raw/service_requests.csv")
 
 EXPECTED_ISSUES = {
     "closed_before_created": 1,
@@ -28,11 +27,16 @@ EXPECTED_ISSUES = {
 }
 
 
-def test_committed_fixture_has_expected_control_totals() -> None:
-    result = validate_file(FIXTURE_PATH, CONTRACT_PATH)
+@pytest.fixture
+def fixture_path(tmp_path: Path) -> Path:
+    return write_dataset(generate_dataframe(), tmp_path / "service_requests.csv")
 
-    assert result.total_rows == 100
-    assert result.valid_rows == 89
+
+def test_generated_fixture_has_expected_control_totals(fixture_path: Path) -> None:
+    result = validate_file(fixture_path, CONTRACT_PATH)
+
+    assert result.total_rows == 1000
+    assert result.valid_rows == 989
     assert result.invalid_rows == 11
     assert result.issue_counts == EXPECTED_ISSUES
 
@@ -56,17 +60,20 @@ def test_missing_required_column_fails_fast() -> None:
         validate_dataframe(source, contract)
 
 
-def test_report_is_stable_and_machine_readable(tmp_path: Path) -> None:
-    result = validate_file(FIXTURE_PATH, CONTRACT_PATH)
+def test_report_is_stable_and_machine_readable(
+    fixture_path: Path,
+    tmp_path: Path,
+) -> None:
+    result = validate_file(fixture_path, CONTRACT_PATH)
     report_path = write_report(result, tmp_path / "validation_report.json")
     report = json.loads(report_path.read_text(encoding="utf-8"))
 
     assert report == {
         "invalid_rows": 11,
         "issue_counts": EXPECTED_ISSUES,
-        "total_rows": 100,
-        "valid_rate": 0.89,
-        "valid_rows": 89,
+        "total_rows": 1000,
+        "valid_rate": 0.989,
+        "valid_rows": 989,
     }
 
 
