@@ -103,10 +103,10 @@ def _build_manifest(
         == global_kpis["total_requests"],
         "weighted_team_sla_equals_global": weighted_team_rate
         == global_kpis["sla_compliance_rate"],
-        "all_breach_rows_are_closed": breach_details["status"].eq("closed").all(),
-        "all_breach_overruns_are_positive": breach_details[
-            "resolution_overrun_minutes"
-        ].gt(0).all(),
+        "all_breach_rows_are_closed": bool(breach_details["status"].eq("closed").all()),
+        "all_breach_overruns_are_positive": bool(
+            breach_details["resolution_overrun_minutes"].gt(0).all()
+        ),
     }
     return {
         "analytics_version": ANALYTICS_VERSION,
