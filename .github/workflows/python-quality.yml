@@ -134,10 +134,57 @@ jobs:
               raise SystemExit("One or more Medallion reconciliation controls failed.")
           print("Medallion controls, KPI ranges and evidence reconciliation passed.")
 
-      - name: Upload validation and Medallion evidence
+      - name: Build local SQL analytics layer
+        run: >-
+          python -m service_operations build-analytics
+          --medallion .ci-output/medallion
+          --sql-dir analytics/sql
+          --output .ci-output/analytics
+
+      - name: Verify SQL analytics controls and committed evidence
+        shell: python
+        run: |
+          import json
+          from pathlib import Path
+
+          import pandas as pd
+
+          generated = json.loads(
+              Path(".ci-output/analytics/analytics_manifest.json").read_text(encoding="utf-8")
+          )
+          committed = json.loads(
+              Path("evidence/analytics_manifest.json").read_text(encoding="utf-8")
+          )
+          if generated != committed:
+              raise SystemExit("Generated analytics manifest differs from committed evidence.")
+
+          expected_counts = {
+              "service_requests_enriched": 989,
+              "sla_by_team": 5,
+              "sla_by_category": 5,
+              "sla_by_priority": 4,
+              "sla_by_team_category": 15,
+              "daily_service_operations": 90,
+              "sla_breach_details": 34,
+          }
+          if generated["row_counts"] != expected_counts:
+              raise SystemExit("Unexpected SQL analytics row counts.")
+          if not all(generated["controls"].values()):
+              raise SystemExit("One or more SQL analytics reconciliation controls failed.")
+          if generated["global_kpis"]["sla_breaches"] != 34:
+              raise SystemExit("Unexpected SLA breach population.")
+
+          for name in ["sla_by_team", "sla_by_category", "sla_by_priority"]:
+              actual = pd.read_csv(Path(".ci-output/analytics") / f"{name}.csv")
+              expected = pd.read_csv(Path("evidence") / f"{name}.csv")
+              pd.testing.assert_frame_equal(actual, expected, check_dtype=False)
+
+          print("SQL analytics controls and evidence reconciliation passed.")
+
+      - name: Upload pipeline and analytics evidence
         uses: actions/upload-artifact@v7
         with:
-          name: validation-evidence-${{ matrix.os }}
+          name: service-operations-evidence-${{ matrix.os }}
           path: .ci-output/
           include-hidden-files: true
           if-no-files-found: error
