@@ -1,0 +1,5 @@
+priority,closed_requests,sla_met_requests,sla_breaches,sla_compliance_rate,sla_breach_rate,escalated_closed_requests,closed_escalation_rate,reopened_requests,reopen_rate,average_resolution_minutes,median_resolution_minutes
+P1,22,18,4,0.8182,0.1818,7,0.3182,2,0.0909,175.27,168.0
+P2,157,148,9,0.9427,0.0573,18,0.1146,8,0.051,260.26,237.0
+P3,449,432,17,0.9621,0.0379,33,0.0735,24,0.0535,754.56,705.0
+P4,205,201,4,0.9805,0.0195,17,0.0829,14,0.0683,1525.58,1502.0
