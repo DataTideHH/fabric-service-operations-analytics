@@ -1,6 +1,6 @@
 # Microsoft Fabric Adoption Plan
 
-The repository is executable without a Fabric capacity. PR 1 established the source and quality contract; PR 2 implemented the complete local Bronze/Silver/Gold transformation and reconciliation logic; PR 2.1 calibrated the synthetic operating scenario before semantic-model and report work begins.
+The repository is executable without a Fabric capacity. PR 1 established the source and quality contract; PR 2 implemented the complete local Bronze/Silver/Gold transformation and reconciliation logic; PR 2.1 calibrated the synthetic operating scenario; PR 2.2 adds a versioned SQL analytics contract before semantic-model and report work begins.
 
 ## Why Fabric-generated items are not hand-written yet
 
@@ -45,6 +45,17 @@ Official references:
 - documented synthetic design ranges for SLA, reopen, escalation and backlog rates
 - stable full-file SHA-256 fingerprint instead of a committed generated CSV
 
+### PR 2.2 — SQL analytics layer and SLA breach analysis
+
+- DuckDB execution directly against local Gold Parquet tables
+- versioned SQL models for enriched requests, daily operations and SLA analysis
+- grouped marts by team, category, priority and team-category combination
+- exactly 34 auditable SLA breach detail rows
+- machine-readable metric contract with explicit eligible populations and denominators
+- analytics manifest reconciled to the Gold KPI and row-count evidence
+- reviewable CSV and Markdown analysis outputs
+- cross-platform analytics execution in CI
+
 ## Remaining implementation sequence
 
 ### PR 3 — Semantic model and report
@@ -52,7 +63,7 @@ Official references:
 - define and document model relationships
 - create operational DAX measures
 - add a compact Power BI report
-- reconcile report measures to the committed Gold KPI evidence
+- reconcile report measures to the committed Gold and SQL analytics evidence
 - capture model and report screenshots
 
 This stage can be produced locally with Power BI Desktop. It does not by itself prove Fabric execution.
@@ -62,7 +73,7 @@ This stage can be produced locally with Power BI Desktop. It does not by itself 
 - create the real Fabric Lakehouse
 - import or adapt the tested transformation logic in a Fabric notebook
 - write Bronze, Silver and Gold Delta tables
-- reproduce the local control totals and KPIs
+- reproduce the local control totals, KPIs and analytical marts
 - synchronize real Fabric item definitions
 - verify notebook, Lakehouse and semantic-model bindings
 - document workspace setup, execution and source-control boundaries
@@ -76,6 +87,7 @@ source rows:        1,000
 silver valid rows:    989
 silver rejected rows:  11
 gold fact rows:        989
+SLA breach rows:        34
 ```
 
-It must also reproduce the committed KPI and foreign-key controls. Any difference must be explained before downstream reporting is accepted.
+It must also reproduce the committed KPI, foreign-key and analytics reconciliation controls. Any difference must be explained before downstream reporting is accepted.

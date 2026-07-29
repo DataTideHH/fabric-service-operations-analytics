@@ -1,0 +1,71 @@
+{
+  "contract_name": "service_operations_metrics",
+  "contract_version": "1.0.0",
+  "scope": "Accepted synthetic service requests from the local Gold fact table.",
+  "metrics": [
+    {
+      "name": "total_requests",
+      "eligible_population": "all accepted requests",
+      "numerator": "accepted request count",
+      "denominator": null,
+      "format": "whole_number"
+    },
+    {
+      "name": "open_backlog_rate",
+      "eligible_population": "all accepted requests",
+      "numerator": "accepted requests with status = open",
+      "denominator": "all accepted requests",
+      "format": "percentage"
+    },
+    {
+      "name": "sla_compliance_rate",
+      "eligible_population": "accepted requests with status = closed",
+      "numerator": "closed requests with sla_met = true",
+      "denominator": "accepted requests with status = closed",
+      "format": "percentage"
+    },
+    {
+      "name": "sla_breach_rate",
+      "eligible_population": "accepted requests with status = closed",
+      "numerator": "closed requests with sla_met = false",
+      "denominator": "accepted requests with status = closed",
+      "format": "percentage"
+    },
+    {
+      "name": "reopen_rate",
+      "eligible_population": "accepted requests with status = closed",
+      "numerator": "closed requests with reopened_count > 0",
+      "denominator": "accepted requests with status = closed",
+      "format": "percentage"
+    },
+    {
+      "name": "escalation_rate",
+      "eligible_population": "all accepted requests",
+      "numerator": "accepted requests with escalated = true",
+      "denominator": "all accepted requests",
+      "format": "percentage"
+    },
+    {
+      "name": "closed_escalation_rate",
+      "eligible_population": "accepted requests with status = closed",
+      "numerator": "closed requests with escalated = true",
+      "denominator": "accepted requests with status = closed",
+      "format": "percentage"
+    },
+    {
+      "name": "average_resolution_minutes",
+      "eligible_population": "accepted requests with status = closed",
+      "numerator": "sum of resolution_minutes",
+      "denominator": "accepted requests with status = closed",
+      "format": "decimal_number"
+    },
+    {
+      "name": "median_resolution_minutes",
+      "eligible_population": "accepted requests with status = closed",
+      "numerator": "median of resolution_minutes",
+      "denominator": null,
+      "format": "decimal_number"
+    }
+  ],
+  "interpretation_boundary": "The analytics layer identifies concentration and association patterns. It does not establish root cause because the source model contains no cause codes, waiting-state history, reassignment events or supplier dependencies."
+}

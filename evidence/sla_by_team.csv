@@ -1,0 +1,6 @@
+assigned_team,closed_requests,sla_met_requests,sla_breaches,sla_compliance_rate,sla_breach_rate,escalated_closed_requests,closed_escalation_rate,reopened_requests,reopen_rate,average_resolution_minutes,median_resolution_minutes
+business_apps,209,199,10,0.9522,0.0478,20,0.0957,15,0.0718,768.84,639.0
+data_platform,114,107,7,0.9386,0.0614,13,0.114,4,0.0351,968.98,800.0
+network_ops,129,120,9,0.9302,0.0698,12,0.093,6,0.0465,722.37,605.0
+service_desk,234,227,7,0.9701,0.0299,19,0.0812,14,0.0598,827.22,698.5
+workplace,147,146,1,0.9932,0.0068,11,0.0748,9,0.0612,941.15,820.0

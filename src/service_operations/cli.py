@@ -1,10 +1,11 @@
-"""Command-line interface for generation, validation and local Medallion builds."""
+"""Command-line interface for generation, validation and local analytics builds."""
 
 from __future__ import annotations
 
 import argparse
 from pathlib import Path
 
+from service_operations.analytics import run_analytics
 from service_operations.generator import DEFAULT_RECORD_COUNT, generate_dataframe, write_dataset
 from service_operations.medallion import run_medallion
 from service_operations.validation import validate_file, write_report
@@ -34,6 +35,14 @@ def _build_parser() -> argparse.ArgumentParser:
     medallion.add_argument("--contract", type=Path, required=True)
     medallion.add_argument("--output", type=Path, required=True)
 
+    analytics = subparsers.add_parser(
+        "build-analytics",
+        help="Build DuckDB SQL analytics marts from local Gold Parquet outputs.",
+    )
+    analytics.add_argument("--medallion", type=Path, required=True)
+    analytics.add_argument("--sql-dir", type=Path, default=Path("analytics/sql"))
+    analytics.add_argument("--output", type=Path, required=True)
+
     return parser
 
 
@@ -52,6 +61,12 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "build-medallion":
         manifest_path = run_medallion(args.input, args.contract, args.output)
         print(f"Wrote reconciled Medallion outputs to {args.output}")
+        print(f"manifest={manifest_path}")
+        return 0
+
+    if args.command == "build-analytics":
+        manifest_path = run_analytics(args.medallion, args.sql_dir, args.output)
+        print(f"Wrote reconciled SQL analytics outputs to {args.output}")
         print(f"manifest={manifest_path}")
         return 0
 
