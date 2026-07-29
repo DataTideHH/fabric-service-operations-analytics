@@ -2,7 +2,7 @@
 
 ## Implemented local pipeline
 
-The local implementation follows the same quality progression intended for the later Microsoft Fabric Lakehouse:
+The local implementation follows the same quality progression intended for the later Microsoft Fabric Lakehouse and adds a transparent SQL analytics layer before any BI-specific artefact is introduced:
 
 ```text
 deterministic generator
@@ -32,11 +32,21 @@ fact_service_requests
 + dim_priority
         |
         v
-service_operations_kpis.csv
-+ medallion_manifest.json
+Gold KPI evidence + Medallion manifest
+        |
+        v
+DuckDB SQL analytics layer
++ enriched request view
++ SLA marts by team, category and priority
++ team-category matrix
++ daily operations mart
++ SLA breach detail mart
+        |
+        v
+analytics manifest + reviewable CSV/Markdown evidence
 ```
 
-The implementation proves that the generated source bytes, data-quality rules, accepted and rejected populations, foreign keys and KPI calculations reconcile before a cloud workspace exists.
+The implementation proves that generated source bytes, data-quality rules, accepted and rejected populations, Gold foreign keys, KPI calculations and grouped analytical results reconcile before a cloud workspace or Power BI report exists.
 
 ## Synthetic operating scenario
 
@@ -90,6 +100,19 @@ The documented KPI ranges are design constraints for this synthetic scenario, no
 - uses closed tickets as the eligible population for reopen rate
 - writes a stable JSON manifest for automated comparison
 
+### SQL analytics
+
+- reads the Gold Parquet tables directly with DuckDB
+- keeps analytical logic in versioned SQL files
+- joins business labels into a 989-row enriched request view
+- publishes grouped SLA marts with explicit denominators
+- publishes exactly 34 auditable SLA breach rows
+- distinguishes breach count from breach rate
+- reconciles every grouped population to the global Gold controls
+- writes Parquet outputs plus small CSV and JSON review evidence
+
+The machine-readable metric contract is stored in `analytics/metric_contract.json`. The layer identifies concentration and association patterns; it does not claim causal root-cause analysis.
+
 ## Planned Microsoft Fabric mapping
 
 ```text
@@ -104,7 +127,8 @@ silver/service_request_issues.parquet         Data-quality audit table
 gold/dim_*.parquet                            Gold dimension tables
 gold/fact_service_requests.parquet            Gold fact table
 gold/service_operations_kpis.csv              KPI validation table
-medallion_manifest.json                       Pipeline control evidence
+DuckDB SQL marts                              Warehouse/Lakehouse SQL views or tables
+analytics_manifest.json                       Downstream reconciliation evidence
 curated Gold model                            Direct Lake semantic model
 ```
 
@@ -116,9 +140,9 @@ The repository still does not claim:
 - creation of Lakehouse or OneLake objects
 - Fabric Spark or notebook execution
 - a working Data Factory pipeline
-- a SQL analytics endpoint
+- a Fabric SQL analytics endpoint
 - a Direct Lake semantic model
 - a deployed Power BI report
 - Fabric Git synchronization
 
-Fabric-generated definitions and workspace identifiers will only be committed after they are exported or synchronized from a real workspace.
+The implemented DuckDB layer is local SQL analytics, not a Fabric SQL endpoint. Fabric-generated definitions and workspace identifiers will only be committed after they are exported or synchronized from a real workspace.
