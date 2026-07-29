@@ -1,0 +1,6 @@
+category,closed_requests,sla_met_requests,sla_breaches,sla_compliance_rate,sla_breach_rate,escalated_closed_requests,closed_escalation_rate,reopened_requests,reopen_rate,average_resolution_minutes,median_resolution_minutes
+access,211,208,3,0.9858,0.0142,17,0.0806,14,0.0664,914.87,797.0
+application,230,214,16,0.9304,0.0696,25,0.1087,14,0.0609,751.59,637.0
+hardware,134,133,1,0.9925,0.0075,7,0.0522,8,0.0597,935.9,869.5
+network,140,128,12,0.9143,0.0857,17,0.1214,7,0.05,662.51,482.5
+reporting,118,116,2,0.9831,0.0169,9,0.0763,5,0.0424,950.76,754.0
