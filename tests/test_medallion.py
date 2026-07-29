@@ -4,9 +4,9 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
+from service_operations.generator import generate_dataframe, write_dataset
 from service_operations.medallion import build_medallion, write_medallion
 
-INPUT_PATH = Path("data/raw/service_requests.csv")
 CONTRACT_PATH = Path("contracts/service_requests.contract.json")
 EVIDENCE_MANIFEST = Path("evidence/medallion_manifest.json")
 EVIDENCE_KPIS = Path("evidence/service_operations_kpis.csv")
@@ -42,8 +42,14 @@ EXPECTED_KPIS = {
 
 
 @pytest.fixture(scope="module")
-def tables():
-    return build_medallion(INPUT_PATH, CONTRACT_PATH)
+def input_path(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    path = tmp_path_factory.mktemp("fixture") / "service_requests.csv"
+    return write_dataset(generate_dataframe(), path)
+
+
+@pytest.fixture(scope="module")
+def tables(input_path: Path):
+    return build_medallion(input_path, CONTRACT_PATH)
 
 
 def test_bronze_preserves_source_rows_and_adds_metadata(tables) -> None:
@@ -65,7 +71,6 @@ def test_silver_reconciles_valid_and_rejected_rows(tables) -> None:
 
 def test_gold_star_schema_has_complete_foreign_keys(tables) -> None:
     fact = tables.fact_service_requests
-
     assert len(fact) == 989
     assert fact["ticket_id"].is_unique
     assert set(fact["team_key"]).issubset(set(tables.dim_team["team_key"]))
@@ -89,22 +94,19 @@ def test_manifest_and_kpis_match_verified_controls(tables) -> None:
 
 def test_operational_baseline_stays_within_documented_ranges(tables) -> None:
     kpis = tables.manifest["kpis"]
-
     assert 0.93 <= kpis["sla_compliance_rate"] <= 0.96
     assert 0.05 <= kpis["reopen_rate"] <= 0.09
     assert 0.07 <= kpis["escalation_rate"] <= 0.12
     assert 0.10 <= kpis["open_backlog_rate"] <= 0.18
     assert kpis["reopen_eligible_requests"] == kpis["closed_requests"]
     assert tables.silver_valid.loc[
-        tables.silver_valid["status"].eq("open"),
-        "reopened_count",
+        tables.silver_valid["status"].eq("open"), "reopened_count"
     ].eq(0).all()
 
 
 def test_committed_text_evidence_matches_generated_tables(tables) -> None:
     committed_manifest = json.loads(EVIDENCE_MANIFEST.read_text(encoding="utf-8"))
     committed_kpis = pd.read_csv(EVIDENCE_KPIS)
-
     assert tables.manifest == committed_manifest
     pd.testing.assert_frame_equal(tables.kpis, committed_kpis, check_dtype=False)
 
@@ -112,7 +114,6 @@ def test_committed_text_evidence_matches_generated_tables(tables) -> None:
 def test_write_medallion_persists_all_layers(tables, tmp_path: Path) -> None:
     output_dir = tmp_path / "lakehouse"
     manifest_path = write_medallion(tables, output_dir)
-
     expected_paths = [
         output_dir / "bronze/service_requests.parquet",
         output_dir / "silver/service_requests_valid.parquet",
