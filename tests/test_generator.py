@@ -25,9 +25,31 @@ def test_committed_fixture_matches_generator(tmp_path: Path) -> None:
 def test_clean_generation_contains_no_injected_anomalies() -> None:
     clean = generate_dataframe(inject_anomalies=False)
 
+    assert len(clean) == 1000
     assert clean["ticket_id"].is_unique
     assert set(clean["priority"]) <= {"P1", "P2", "P3", "P4"}
     assert set(clean["escalated"]) <= {"true", "false"}
+
+
+def test_open_requests_cannot_be_reopened() -> None:
+    clean = generate_dataframe(inject_anomalies=False)
+    open_requests = clean.loc[clean["status"].eq("open")]
+
+    assert open_requests["closed_at"].eq("").all()
+    assert open_requests["resolution_minutes"].eq("").all()
+    assert open_requests["reopened_count"].eq(0).all()
+
+
+def test_category_and_team_assignment_are_correlated() -> None:
+    clean = generate_dataframe(inject_anomalies=False)
+
+    network = clean.loc[clean["category"].eq("network")]
+    application = clean.loc[clean["category"].eq("application")]
+    reporting = clean.loc[clean["category"].eq("reporting")]
+
+    assert network["assigned_team"].eq("network_ops").mean() >= 0.65
+    assert application["assigned_team"].eq("business_apps").mean() >= 0.55
+    assert reporting["assigned_team"].eq("data_platform").mean() >= 0.45
 
 
 def test_generator_rejects_too_small_fixture() -> None:
