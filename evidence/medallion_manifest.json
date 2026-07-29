@@ -1,0 +1,47 @@
+{
+  "controls": {
+    "bronze_equals_valid_plus_rejected": true,
+    "foreign_keys_complete": true,
+    "valid_equals_fact": true
+  },
+  "ingestion_batch_id": "0975185eb13ee5f5",
+  "issue_counts": {
+    "closed_before_created": 1,
+    "closed_missing_closed_at": 1,
+    "duplicate_ticket_id": 2,
+    "invalid_assigned_team": 1,
+    "invalid_escalated": 1,
+    "invalid_priority": 1,
+    "missing_required_value": 1,
+    "negative_resolution_minutes": 1,
+    "open_has_closed_at": 1,
+    "sla_priority_mismatch": 1
+  },
+  "kpis": {
+    "average_resolution_minutes": 1653.75,
+    "closed_requests": 73,
+    "escalated_requests": 10,
+    "escalation_rate": 0.1124,
+    "median_resolution_minutes": 1320.0,
+    "open_backlog": 16,
+    "reopen_rate": 0.2135,
+    "reopened_requests": 19,
+    "sla_compliance_rate": 0.4247,
+    "sla_eligible_requests": 73,
+    "sla_met_requests": 31,
+    "total_requests": 89
+  },
+  "pipeline_version": "0.2.0",
+  "row_counts": {
+    "bronze": 100,
+    "dim_category": 5,
+    "dim_date": 69,
+    "dim_priority": 4,
+    "dim_team": 5,
+    "gold_fact": 89,
+    "silver_issues": 11,
+    "silver_rejected": 11,
+    "silver_valid": 89
+  },
+  "source_file": "service_requests.csv"
+}

@@ -81,7 +81,40 @@ jobs:
           --expect-total 100
           --expect-invalid 11
 
-      - name: Upload validation evidence
+      - name: Build local Medallion pipeline
+        run: >-
+          python -m service_operations build-medallion
+          --input data/raw/service_requests.csv
+          --contract contracts/service_requests.contract.json
+          --output .ci-output/medallion
+
+      - name: Verify Medallion controls and committed evidence
+        shell: python
+        run: |
+          import json
+          from pathlib import Path
+
+          generated = json.loads(
+              Path(".ci-output/medallion/medallion_manifest.json").read_text(encoding="utf-8")
+          )
+          committed = json.loads(
+              Path("evidence/medallion_manifest.json").read_text(encoding="utf-8")
+          )
+          if generated != committed:
+              raise SystemExit("Generated Medallion manifest differs from committed evidence.")
+          if generated["row_counts"]["bronze"] != 100:
+              raise SystemExit("Unexpected Bronze row count.")
+          if generated["row_counts"]["silver_valid"] != 89:
+              raise SystemExit("Unexpected Silver valid row count.")
+          if generated["row_counts"]["silver_rejected"] != 11:
+              raise SystemExit("Unexpected Silver rejected row count.")
+          if generated["row_counts"]["gold_fact"] != 89:
+              raise SystemExit("Unexpected Gold fact row count.")
+          if not all(generated["controls"].values()):
+              raise SystemExit("One or more Medallion reconciliation controls failed.")
+          print("Medallion controls and evidence reconciliation passed.")
+
+      - name: Upload validation and Medallion evidence
         uses: actions/upload-artifact@v7
         with:
           name: validation-evidence-${{ matrix.os }}

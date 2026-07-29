@@ -2,75 +2,112 @@
 
 [![Python quality](https://github.com/DataTideHH/fabric-service-operations-analytics/actions/workflows/python-quality.yml/badge.svg)](https://github.com/DataTideHH/fabric-service-operations-analytics/actions/workflows/python-quality.yml)
 
-**Microsoft Fabric planning · service operations · data contracts · data quality · Python 3.12 · pandas · pytest · GitHub Actions**
+**Microsoft Fabric direction · service operations · medallion architecture · star schema · data quality · Python 3.12 · pandas · Parquet · pytest · GitHub Actions**
 
-A bounded DataTideHH portfolio project that prepares a synthetic IT service-operations dataset for a later Microsoft Fabric implementation.
+A bounded DataTideHH portfolio project that prepares synthetic IT service-operations data for a later Microsoft Fabric implementation.
 
-PR 1 establishes a reproducible local baseline before cloud resources exist: a deterministic raw CSV, a machine-readable data contract, row-level data-quality evidence and cross-platform automated tests.
+The repository now contains a reproducible local Bronze/Silver/Gold pipeline. It preserves raw records with ingestion metadata, separates typed valid records from auditable rejections, publishes a small star schema and reconciles operational KPIs before any cloud resources are used.
 
 ## Current status
 
 ```text
-Local and CI baseline: implemented
+Local data contract and quality controls: implemented
+Local Bronze/Silver/Gold pipeline: implemented
+Local Parquet star schema and KPI evidence: implemented
+Cross-platform CI: implemented
 Fabric workspace execution: not yet claimed
 Lakehouse / OneLake objects: not yet created
-Power BI semantic model: planned
+Power BI semantic model and report: planned
 ```
 
-This distinction is deliberate. The repository documents a credible path to Fabric without presenting hand-written placeholders as executed Fabric artefacts.
+This distinction is deliberate. The project implements and tests the transformation logic locally without presenting hand-written placeholders as executed Fabric artefacts.
 
 ## Business scenario
 
-The synthetic data represents service requests handled by operational teams. It supports future analysis of:
+The synthetic dataset represents service requests handled by operational teams. It supports analysis of:
 
 - request volumes by priority, category and team
 - SLA compliance
 - resolution time
 - escalations
 - reopenings
-- backlog and lifecycle state
+- open backlog
 - data-quality failures before reporting
 
 No customer, employee or operational production data is included.
 
-## Verified PR 1 controls
+## Verified controls
 
-| Control | Expected value |
+### Data quality and reconciliation
+
+| Control | Verified value |
 |---|---:|
-| Source rows | 100 |
-| Valid rows | 89 |
-| Invalid rows | 11 |
-| Valid rate | 89.0% |
+| Bronze source rows | 100 |
+| Silver valid rows | 89 |
+| Silver rejected rows | 11 |
+| Silver issue records | 11 |
+| Gold fact rows | 89 |
 | Duplicate identifier occurrences | 2 |
-| Python targets | Ubuntu 24.04 and Windows 2025 |
+| Date dimension rows | 69 |
+| Team dimension rows | 5 |
+| Category dimension rows | 5 |
+| Priority dimension rows | 4 |
 
-The intentional defects are documented in [`docs/data-quality-rules.md`](docs/data-quality-rules.md).
+The pipeline fails when Bronze does not reconcile to valid plus rejected rows, when Silver valid records do not reconcile to the Gold fact table, or when a Gold foreign key is unresolved.
 
-## Architecture direction
+### Gold KPI evidence
+
+| KPI | Verified value |
+|---|---:|
+| Total accepted requests | 89 |
+| Closed requests | 73 |
+| Open backlog | 16 |
+| SLA-met requests | 31 |
+| SLA compliance rate | 42.47% |
+| Average resolution time | 1,653.75 minutes |
+| Median resolution time | 1,320 minutes |
+| Escalated requests | 10 |
+| Escalation rate | 11.24% |
+| Reopened requests | 19 |
+| Reopen rate | 21.35% |
+
+The committed text evidence is stored in [`evidence/`](evidence/) and is regenerated and compared in CI.
+
+## Implemented local architecture
 
 ```text
-local raw CSV
+synthetic raw CSV
       |
       v
-data contract and deterministic validation
+Bronze Parquet
+source-shaped values + source row + file + batch metadata
       |
       v
-verified local quality report
+contract validation
+      |
+      +-------------------------------+
+      |                               |
+      v                               v
+Silver valid Parquet             Silver rejected Parquet
+strictly typed records           raw values + rejection reasons
+      |                               |
+      |                               +--> issue-level audit Parquet
+      v
+Gold star schema
+fact_service_requests
++ dim_date
++ dim_team
++ dim_category
++ dim_priority
       |
       v
-planned Bronze Lakehouse
+reconciled KPI CSV + manifest JSON
       |
       v
-planned Silver typed and rejected tables
-      |
-      v
-planned Gold star schema and KPIs
-      |
-      v
-planned Power BI semantic model and report
+planned Fabric Lakehouse / Direct Lake / Power BI implementation
 ```
 
-See [`docs/architecture.md`](docs/architecture.md) and [`docs/fabric-adoption-plan.md`](docs/fabric-adoption-plan.md).
+See [`docs/architecture.md`](docs/architecture.md), [`docs/local-medallion-pipeline.md`](docs/local-medallion-pipeline.md) and [`docs/fabric-adoption-plan.md`](docs/fabric-adoption-plan.md).
 
 ## Quick start
 
@@ -84,15 +121,13 @@ python -m pip install -r requirements-dev.txt
 python -m pytest
 ```
 
-Validate the committed fixture and write a local report:
+Build all local layers:
 
 ```powershell
-python -m service_operations validate `
+python -m service_operations build-medallion `
   --input "data/raw/service_requests.csv" `
   --contract "contracts/service_requests.contract.json" `
-  --report ".ci-output/validation_report.json" `
-  --expect-total 100 `
-  --expect-invalid 11
+  --output ".ci-output/medallion"
 ```
 
 ### macOS and Linux
@@ -106,12 +141,27 @@ python -m pytest
 ```
 
 ```bash
-python -m service_operations validate \
+python -m service_operations build-medallion \
   --input data/raw/service_requests.csv \
   --contract contracts/service_requests.contract.json \
-  --report .ci-output/validation_report.json \
-  --expect-total 100 \
-  --expect-invalid 11
+  --output .ci-output/medallion
+```
+
+The output directory contains:
+
+```text
+medallion/
+├── bronze/service_requests.parquet
+├── silver/service_requests_valid.parquet
+├── silver/service_requests_rejected.parquet
+├── silver/service_request_issues.parquet
+├── gold/fact_service_requests.parquet
+├── gold/dim_date.parquet
+├── gold/dim_team.parquet
+├── gold/dim_category.parquet
+├── gold/dim_priority.parquet
+├── gold/service_operations_kpis.csv
+└── medallion_manifest.json
 ```
 
 ## Reproduce the source fixture
@@ -121,15 +171,7 @@ python -m service_operations generate \
   --output .ci-output/generated-service-requests.csv
 ```
 
-The test suite verifies that generated bytes match the committed fixture.
-
-Generate a clean comparison dataset without intentional defects:
-
-```bash
-python -m service_operations generate \
-  --output .ci-output/clean-service-requests.csv \
-  --clean
-```
+The test suite verifies that generated bytes match the committed source fixture on Ubuntu and Windows.
 
 ## Repository structure
 
@@ -142,7 +184,11 @@ fabric-service-operations-analytics/
 │   ├── architecture.md
 │   ├── data-contract.md
 │   ├── data-quality-rules.md
-│   └── fabric-adoption-plan.md
+│   ├── fabric-adoption-plan.md
+│   └── local-medallion-pipeline.md
+├── evidence/
+│   ├── medallion_manifest.json
+│   └── service_operations_kpis.csv
 ├── fabric/README.md
 ├── src/service_operations/
 ├── tests/
@@ -152,28 +198,29 @@ fabric-service-operations-analytics/
 
 ## Quality automation
 
-The GitHub Actions matrix runs on Python 3.12 for Ubuntu 24.04 and Windows 2025. Each job:
+The GitHub Actions matrix runs Python 3.12 on Ubuntu 24.04 and Windows 2025. Each job:
 
-1. installs the project and development dependencies
+1. installs pandas, PyArrow and the quality dependencies
 2. compiles Python sources
 3. runs Ruff lint and format checks
-4. runs the pytest suite
-5. regenerates the synthetic fixture
-6. compares generated and committed CSV bytes
-7. validates the 100/89/11 control totals
-8. uploads a short-lived validation report
+4. runs the complete pytest suite
+5. regenerates and byte-compares the synthetic source fixture
+6. validates the 100/89/11 data-quality controls
+7. builds every local Bronze/Silver/Gold output
+8. verifies row reconciliation, foreign keys, KPIs and committed evidence
+9. uploads short-lived Parquet, CSV and JSON evidence
 
 ## Scope boundaries
 
 This repository currently does not claim:
 
 - a deployed Fabric Lakehouse
-- OneLake data persistence
-- Fabric Spark execution
+- OneLake persistence
+- Fabric Spark or notebook execution
 - a Data Factory pipeline
 - a SQL analytics endpoint
 - a Direct Lake semantic model
 - a Power BI report
 - production-scale service management analytics
 
-The current value is the tested contract and reproducible baseline that those later Fabric artefacts must match.
+The local pipeline is the tested implementation contract that later Fabric artefacts must reproduce.

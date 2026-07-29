@@ -1,8 +1,8 @@
-# Architecture Baseline
+# Architecture
 
-## Current PR 1 scope
+## Implemented local pipeline
 
-The current implementation is intentionally local and platform-neutral:
+The local implementation follows the same quality progression intended for the later Microsoft Fabric Lakehouse:
 
 ```text
 deterministic generator
@@ -11,46 +11,87 @@ deterministic generator
 synthetic raw CSV
         |
         v
-machine-readable data contract
+Bronze: source-shaped Parquet + ingestion metadata
         |
         v
-row-level validation
+machine-readable contract validation
         |
-        +--> validation report
+        +------------------------------+
+        |                              |
+        v                              v
+Silver valid: typed Parquet       Silver rejected: raw values
+                                  + rejection reasons
+        |                              |
+        |                              +--> issue-level audit table
+        v
+Gold star schema
+fact_service_requests
++ dim_date
++ dim_team
++ dim_category
++ dim_priority
         |
-        +--> automated local and CI tests
+        v
+service_operations_kpis.csv
++ medallion_manifest.json
 ```
 
-This proves that the source fixture, contract and quality expectations are reproducible before any cloud resources are created.
+The implementation proves that the raw fixture, data-quality rules, accepted and rejected populations, foreign keys and KPI calculations reconcile before a cloud workspace exists.
+
+## Layer responsibilities
+
+### Bronze
+
+- preserves all 100 source rows
+- keeps source values as text
+- records the original CSV line number
+- records the source file
+- derives a deterministic ingestion batch identifier from the source bytes
+- adds a fixed portfolio-fixture ingestion timestamp
+
+### Silver
+
+- applies the existing machine-readable data contract
+- produces 89 typed valid records
+- produces 11 rejected source records
+- retains pipe-separated rejection reasons on each rejected row
+- retains 11 issue-level audit records
+- converts timestamps, integer fields and booleans to explicit types
+- derives a nullable `sla_met` field for closed requests
+
+### Gold
+
+- publishes an 89-row fact table
+- publishes date, team, category and priority dimensions
+- verifies every fact foreign key
+- calculates reconciled SLA, backlog, resolution, escalation and reopening KPIs
+- writes a stable JSON manifest for automated comparison
 
 ## Planned Microsoft Fabric mapping
 
 ```text
-Repository baseline                 Planned Fabric item
------------------------------------------------------------------------
-data/raw/service_requests.csv       Bronze Lakehouse Files area
-contract validation                 Silver transformation notebook
-accepted typed records              Silver Delta table
-service-operation dimensions        Gold dimension tables
-service-operation facts             Gold fact table
-quality control totals              Data-quality audit table
-orchestration specification         Data Factory pipeline
-curated model                       Power BI semantic model / Direct Lake
+Local implementation                         Planned Fabric item
+----------------------------------------------------------------------------
+data/raw/service_requests.csv                 Bronze Lakehouse Files area
+bronze/service_requests.parquet               Bronze table or Files output
+contract validation                           Fabric notebook transformation
+silver/service_requests_valid.parquet         Silver Delta table
+silver/service_requests_rejected.parquet      Silver rejection table
+silver/service_request_issues.parquet         Data-quality audit table
+gold/dim_*.parquet                            Gold dimension tables
+gold/fact_service_requests.parquet            Gold fact table
+gold/service_operations_kpis.csv              KPI validation table
+medallion_manifest.json                       Pipeline control evidence
+curated Gold model                            Direct Lake semantic model
 ```
-
-The planned target follows a bronze, silver and gold medallion structure:
-
-- **Bronze:** retain source-shaped data and ingestion metadata.
-- **Silver:** apply typing, contract checks, deduplication and rejection logic.
-- **Gold:** publish a small star schema and operational KPIs.
 
 ## Explicit non-claims
 
-PR 1 does not claim:
+The repository still does not claim:
 
 - execution in a Fabric workspace
-- creation of a Lakehouse or OneLake objects
-- execution with Fabric Spark
+- creation of Lakehouse or OneLake objects
+- Fabric Spark or notebook execution
 - a working Data Factory pipeline
 - a SQL analytics endpoint
 - a Direct Lake semantic model
