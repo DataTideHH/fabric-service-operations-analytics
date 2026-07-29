@@ -5,7 +5,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from service_operations.generator import generate_dataframe, write_dataset
+from service_operations.generator import DEFAULT_RECORD_COUNT, generate_dataframe, write_dataset
 from service_operations.medallion import run_medallion
 from service_operations.validation import validate_file, write_report
 
@@ -16,7 +16,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
     generate = subparsers.add_parser("generate", help="Generate the synthetic CSV fixture.")
     generate.add_argument("--output", type=Path, required=True)
-    generate.add_argument("--records", type=int, default=100)
+    generate.add_argument("--records", type=int, default=DEFAULT_RECORD_COUNT)
     generate.add_argument("--clean", action="store_true")
 
     validate = subparsers.add_parser("validate", help="Validate CSV data against the contract.")
