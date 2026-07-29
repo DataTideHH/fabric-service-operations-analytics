@@ -1,0 +1,38 @@
+{
+  "analytics_version": "0.1.0",
+  "controls": {
+    "all_breach_overruns_are_positive": true,
+    "all_breach_rows_are_closed": true,
+    "breach_details_equals_global_breaches": true,
+    "category_closed_reconciles": true,
+    "daily_requests_reconcile": true,
+    "enriched_equals_gold_fact": true,
+    "priority_closed_reconciles": true,
+    "team_category_closed_reconciles": true,
+    "team_closed_reconciles": true,
+    "weighted_team_sla_equals_global": true
+  },
+  "global_kpis": {
+    "closed_requests": 833,
+    "escalated_requests": 85,
+    "escalation_rate": 0.0859,
+    "open_backlog": 156,
+    "open_backlog_rate": 0.1577,
+    "reopen_rate": 0.0576,
+    "reopened_requests": 48,
+    "sla_breaches": 34,
+    "sla_compliance_rate": 0.9592,
+    "sla_met_requests": 799,
+    "total_requests": 989
+  },
+  "row_counts": {
+    "daily_service_operations": 90,
+    "service_requests_enriched": 989,
+    "sla_breach_details": 34,
+    "sla_by_category": 5,
+    "sla_by_priority": 4,
+    "sla_by_team": 5,
+    "sla_by_team_category": 15
+  },
+  "source_ingestion_batch_id": "292ed8fb2857e392"
+}
