@@ -1,3 +1,4 @@
+import hashlib
 from pathlib import Path
 
 import pandas as pd
@@ -5,7 +6,7 @@ import pytest
 
 from service_operations.generator import generate_dataframe, write_dataset
 
-FIXTURE_PATH = Path("data/raw/service_requests.csv")
+EXPECTED_FIXTURE_SHA256 = "292ed8fb2857e3927936a5b3ca002492b146875d04baee77a9322de287db8914"
 
 
 def test_generation_is_deterministic() -> None:
@@ -15,11 +16,12 @@ def test_generation_is_deterministic() -> None:
     pd.testing.assert_frame_equal(first, second)
 
 
-def test_committed_fixture_matches_generator(tmp_path: Path) -> None:
+def test_generated_fixture_has_stable_bytes(tmp_path: Path) -> None:
     generated_path = tmp_path / "service_requests.csv"
     write_dataset(generate_dataframe(), generated_path)
 
-    assert generated_path.read_bytes() == FIXTURE_PATH.read_bytes()
+    digest = hashlib.sha256(generated_path.read_bytes()).hexdigest()
+    assert digest == EXPECTED_FIXTURE_SHA256
 
 
 def test_clean_generation_contains_no_injected_anomalies() -> None:
