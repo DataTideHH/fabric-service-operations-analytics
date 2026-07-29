@@ -99,9 +99,11 @@ def test_operational_baseline_stays_within_documented_ranges(tables) -> None:
     assert 0.07 <= kpis["escalation_rate"] <= 0.12
     assert 0.10 <= kpis["open_backlog_rate"] <= 0.18
     assert kpis["reopen_eligible_requests"] == kpis["closed_requests"]
-    assert tables.silver_valid.loc[
-        tables.silver_valid["status"].eq("open"), "reopened_count"
-    ].eq(0).all()
+    assert (
+        tables.silver_valid.loc[tables.silver_valid["status"].eq("open"), "reopened_count"]
+        .eq(0)
+        .all()
+    )
 
 
 def test_committed_text_evidence_matches_generated_tables(tables) -> None:
