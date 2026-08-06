@@ -41,9 +41,7 @@ def _case_events(record: Any) -> list[tuple[str, pd.Timestamp, int]]:
         closed_at = record.closed_at
         duration_minutes = (closed_at - created_at).total_seconds() / 60
         assigned_minutes = min(15, max(1, round(duration_minutes * 0.05)))
-        events.append(
-            ("team_assigned", created_at + pd.Timedelta(minutes=assigned_minutes), 1)
-        )
+        events.append(("team_assigned", created_at + pd.Timedelta(minutes=assigned_minutes), 1))
 
         reopened_count = int(record.reopened_count)
         if bool(record.escalated):
@@ -93,17 +91,13 @@ def _case_events(record: Any) -> list[tuple[str, pd.Timestamp, int]]:
         )
     else:
         assigned_minutes = min(15, max(1, round(int(record.sla_target_minutes) * 0.05)))
-        events.append(
-            ("team_assigned", created_at + pd.Timedelta(minutes=assigned_minutes), 1)
-        )
+        events.append(("team_assigned", created_at + pd.Timedelta(minutes=assigned_minutes), 1))
         if bool(record.escalated):
             escalation_minutes = max(
                 assigned_minutes + 1,
                 round(int(record.sla_target_minutes) * 0.75),
             )
-            events.append(
-                ("escalated", created_at + pd.Timedelta(minutes=escalation_minutes), 2)
-            )
+            events.append(("escalated", created_at + pd.Timedelta(minutes=escalation_minutes), 2))
 
     return sorted(events, key=lambda event: (event[1], event[2]))
 
@@ -166,8 +160,11 @@ def _build_cases(valid: pd.DataFrame, event_log: pd.DataFrame) -> pd.DataFrame:
         .reset_index()
     )
     event_summary["observed_span_minutes"] = (
-        event_summary["last_event_at"] - event_summary["first_event_at"]
-    ).dt.total_seconds().div(60).round(2)
+        (event_summary["last_event_at"] - event_summary["first_event_at"])
+        .dt.total_seconds()
+        .div(60)
+        .round(2)
+    )
 
     cases = valid.loc[
         :,
@@ -240,8 +237,8 @@ def _build_transitions(event_log: pd.DataFrame) -> pd.DataFrame:
     ordered["target_timestamp"] = ordered.groupby("case_id")["event_timestamp"].shift(-1)
     ordered = ordered.loc[ordered["target_activity"].notna()].copy()
     ordered["wait_minutes"] = (
-        ordered["target_timestamp"] - ordered["event_timestamp"]
-    ).dt.total_seconds().div(60)
+        (ordered["target_timestamp"] - ordered["event_timestamp"]).dt.total_seconds().div(60)
+    )
 
     rows: list[dict[str, Any]] = []
     for (source, target), group in ordered.groupby(
@@ -354,12 +351,12 @@ def _build_manifest(
         "event_indexes_contiguous": _event_indexes_contiguous(event_log),
         "event_timestamps_monotonic": _timestamps_monotonic(event_log),
         "first_activity_is_ticket_created": first_activities.eq("ticket_created").all(),
-        "closed_cases_end_with_ticket_closed": last_activities.loc[
-            sorted(closed_case_ids)
-        ].eq("ticket_closed").all(),
-        "open_cases_do_not_end_with_ticket_closed": last_activities.loc[
-            sorted(open_case_ids)
-        ].ne("ticket_closed").all(),
+        "closed_cases_end_with_ticket_closed": last_activities.loc[sorted(closed_case_ids)]
+        .eq("ticket_closed")
+        .all(),
+        "open_cases_do_not_end_with_ticket_closed": last_activities.loc[sorted(open_case_ids)]
+        .ne("ticket_closed")
+        .all(),
         "reopened_events_reconcile": int(event_log["activity"].eq("reopened").sum())
         == int(valid["reopened_count"].sum()),
         "escalation_events_reconcile": int(event_log["activity"].eq("escalated").sum())
