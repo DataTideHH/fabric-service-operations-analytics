@@ -8,6 +8,7 @@ from pathlib import Path
 from service_operations.analytics import run_analytics
 from service_operations.generator import DEFAULT_RECORD_COUNT, generate_dataframe, write_dataset
 from service_operations.medallion import run_medallion
+from service_operations.process_intelligence import run_process_intelligence
 from service_operations.validation import validate_file, write_report
 
 
@@ -43,6 +44,14 @@ def _build_parser() -> argparse.ArgumentParser:
     analytics.add_argument("--sql-dir", type=Path, default=Path("analytics/sql"))
     analytics.add_argument("--output", type=Path, required=True)
 
+    process_intelligence = subparsers.add_parser(
+        "build-process-intelligence",
+        help="Build a derived event log and process-analysis outputs.",
+    )
+    process_intelligence.add_argument("--input", type=Path, required=True)
+    process_intelligence.add_argument("--contract", type=Path, required=True)
+    process_intelligence.add_argument("--output", type=Path, required=True)
+
     return parser
 
 
@@ -67,6 +76,12 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "build-analytics":
         manifest_path = run_analytics(args.medallion, args.sql_dir, args.output)
         print(f"Wrote reconciled SQL analytics outputs to {args.output}")
+        print(f"manifest={manifest_path}")
+        return 0
+
+    if args.command == "build-process-intelligence":
+        manifest_path = run_process_intelligence(args.input, args.contract, args.output)
+        print(f"Wrote reconciled process-intelligence outputs to {args.output}")
         print(f"manifest={manifest_path}")
         return 0
 

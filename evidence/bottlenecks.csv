@@ -1,0 +1,8 @@
+bottleneck_rank,source_activity,target_activity,case_count,average_wait_minutes,median_wait_minutes,p90_wait_minutes,interpretation_boundary
+1,team_assigned,resolution_recorded,758,712.59,601.95,1458.03,"Derived synthetic waiting time; concentration signal, not causal root cause."
+2,team_assigned,escalated,85,450.94,339.15,1046.28,"Derived synthetic waiting time; concentration signal, not causal root cause."
+3,escalated,resolution_recorded,75,411.04,312.75,888.75,"Derived synthetic waiting time; concentration signal, not causal root cause."
+4,reopened,resolution_recorded,51,190.3,126.28,381.26,"Derived synthetic waiting time; concentration signal, not causal root cause."
+5,resolution_recorded,reopened,51,86.85,60.2,173.3,"Derived synthetic waiting time; concentration signal, not causal root cause."
+6,resolution_recorded,ticket_closed,833,83.58,69.4,171.36,"Derived synthetic waiting time; concentration signal, not causal root cause."
+7,ticket_created,team_assigned,989,14.18,15.0,15.0,"Derived synthetic waiting time; concentration signal, not causal root cause."

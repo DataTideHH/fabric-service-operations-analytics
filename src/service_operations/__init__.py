@@ -16,23 +16,33 @@ from service_operations.medallion import (
     run_medallion,
     write_medallion,
 )
+from service_operations.process_intelligence import (
+    ProcessIntelligenceTables,
+    build_process_intelligence,
+    run_process_intelligence,
+    write_process_intelligence,
+)
 from service_operations.validation import ValidationResult, validate_dataframe, validate_file
 
 __all__ = [
     "AnalyticsTables",
     "MedallionTables",
+    "ProcessIntelligenceTables",
     "ValidationResult",
     "build_analytics",
     "build_bronze",
     "build_medallion",
+    "build_process_intelligence",
     "build_silver",
     "generate_dataframe",
     "load_contract",
     "run_analytics",
     "run_medallion",
+    "run_process_intelligence",
     "validate_dataframe",
     "validate_file",
     "write_analytics",
     "write_dataset",
     "write_medallion",
+    "write_process_intelligence",
 ]

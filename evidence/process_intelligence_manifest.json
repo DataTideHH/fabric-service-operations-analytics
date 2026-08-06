@@ -1,0 +1,32 @@
+{
+  "case_counts": {
+    "closed": 833,
+    "escalated": 85,
+    "open": 156,
+    "reopen_occurrences": 51,
+    "reopened": 48
+  },
+  "controls": {
+    "case_count_matches_valid_source": true,
+    "closed_cases_end_with_ticket_closed": true,
+    "closed_throughput_matches_source": true,
+    "escalation_events_reconcile": true,
+    "event_ids_unique": true,
+    "event_indexes_contiguous": true,
+    "event_timestamps_monotonic": true,
+    "first_activity_is_ticket_created": true,
+    "open_cases_do_not_end_with_ticket_closed": true,
+    "reopened_events_reconcile": true
+  },
+  "event_origin": "derived_synthetic_scenario",
+  "interpretation_boundary": "Event timestamps between ticket creation and closure are deterministic scenario derivations. The outputs support process-analysis practice but do not represent observed production history or causal root-cause evidence.",
+  "process_intelligence_version": "0.1.0",
+  "row_counts": {
+    "bottlenecks": 7,
+    "cases": 989,
+    "events": 3831,
+    "exception_paths": 3,
+    "transitions": 7,
+    "variants": 7
+  }
+}

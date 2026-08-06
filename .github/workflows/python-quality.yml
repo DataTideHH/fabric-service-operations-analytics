@@ -181,6 +181,68 @@ jobs:
 
           print("SQL analytics controls and evidence reconciliation passed.")
 
+      - name: Build local process-intelligence layer
+        run: >-
+          python -m service_operations build-process-intelligence
+          --input .ci-output/service_requests.csv
+          --contract contracts/service_requests.contract.json
+          --output .ci-output/process-intelligence
+
+      - name: Verify process-intelligence controls and committed evidence
+        shell: python
+        run: |
+          import json
+          from pathlib import Path
+
+          import pandas as pd
+
+          generated = json.loads(
+              Path(
+                  ".ci-output/process-intelligence/process_intelligence_manifest.json"
+              ).read_text(encoding="utf-8")
+          )
+          committed = json.loads(
+              Path("evidence/process_intelligence_manifest.json").read_text(encoding="utf-8")
+          )
+          if generated != committed:
+              raise SystemExit(
+                  "Generated process-intelligence manifest differs from committed evidence."
+              )
+
+          expected_rows = {
+              "cases": 989,
+              "events": 3831,
+              "variants": 7,
+              "transitions": 7,
+              "bottlenecks": 7,
+              "exception_paths": 3,
+          }
+          expected_cases = {
+              "closed": 833,
+              "open": 156,
+              "escalated": 85,
+              "reopened": 48,
+              "reopen_occurrences": 51,
+          }
+          if generated["row_counts"] != expected_rows:
+              raise SystemExit("Unexpected process-intelligence row counts.")
+          if generated["case_counts"] != expected_cases:
+              raise SystemExit("Unexpected process-intelligence case populations.")
+          if not all(generated["controls"].values()):
+              raise SystemExit("One or more process-intelligence controls failed.")
+
+          for name in [
+              "process_variants",
+              "transition_performance",
+              "bottlenecks",
+              "exception_paths",
+          ]:
+              actual = pd.read_csv(Path(".ci-output/process-intelligence") / f"{name}.csv")
+              expected = pd.read_csv(Path("evidence") / f"{name}.csv")
+              pd.testing.assert_frame_equal(actual, expected, check_dtype=False)
+
+          print("Process-intelligence controls and evidence reconciliation passed.")
+
       - name: Upload pipeline and analytics evidence
         uses: actions/upload-artifact@v7
         with:
