@@ -1,6 +1,6 @@
 # Microsoft Fabric Adoption Plan
 
-The repository is executable without a Fabric capacity. PR 1 established the source and quality contract; PR 2 implemented the complete local Bronze/Silver/Gold transformation and reconciliation logic; PR 2.1 calibrated the synthetic operating scenario; PR 2.2 adds a versioned SQL analytics contract before semantic-model and report work begins.
+The repository is executable without a Fabric capacity. Each merged pull request establishes a tested local contract that later Fabric and Power BI artefacts must reproduce.
 
 ## Why Fabric-generated items are not hand-written yet
 
@@ -15,13 +15,13 @@ Official references:
 - Notebook source control:
   https://learn.microsoft.com/en-us/fabric/data-engineering/notebook-source-control-deployment
 
-## Completed locally
+## Completed GitHub pull-request sequence
 
 ### PR 1 — Repository and contract baseline
 
 - deterministic synthetic source generator
 - machine-readable data contract
-- row-level validation and issue codes
+- row-level validation and stable issue codes
 - bounded intentional data-quality defects
 - Ubuntu and Windows CI
 
@@ -33,47 +33,54 @@ Official references:
 - Gold fact and four dimensions
 - reconciled operational KPIs
 - stable manifest and committed text evidence
-- full cross-platform pipeline execution in CI
 
-### PR 2.1 — Calibrated service-operations baseline
+### PR 3 — Calibrated service-operations baseline
 
 - 1,000 generated source rows across a 90-day scenario
 - category, team and priority relationships
 - 1,000/989/11 reconciliation controls
 - explicit KPI denominators
-- closed-ticket denominator for reopen rate
-- documented synthetic design ranges for SLA, reopen, escalation and backlog rates
-- stable full-file SHA-256 fingerprint instead of a committed generated CSV
+- documented synthetic design ranges
+- stable full-file SHA-256 fingerprint
 
-### PR 2.2 — SQL analytics layer and SLA breach analysis
+### PR 4 — SQL analytics layer and SLA breach analysis
 
 - DuckDB execution directly against local Gold Parquet tables
 - versioned SQL models for enriched requests, daily operations and SLA analysis
 - grouped marts by team, category, priority and team-category combination
-- exactly 34 auditable SLA breach detail rows
-- machine-readable metric contract with explicit eligible populations and denominators
-- analytics manifest reconciled to the Gold KPI and row-count evidence
-- reviewable CSV and Markdown analysis outputs
-- cross-platform analytics execution in CI
+- exactly 34 auditable SLA breach rows
+- machine-readable metric contract
+- cross-platform analytics execution and evidence reconciliation
+
+### PR 5 — Process-intelligence event layer
+
+- deterministic event log over the 989 valid cases
+- process variants and case-level process summaries
+- transition wait-time statistics
+- ranked waiting-time concentrations
+- escalation and reopening path analysis
+- event, case and exception reconciliation controls
+- explicit distinction between derived scenario events and observed production history
+- CSV and Parquet outputs prepared for later Process Mining integration
 
 ## Remaining implementation sequence
 
-### PR 3 — Semantic model and report
+### PR 6 — Semantic model and Power BI report
 
 - define and document model relationships
 - create operational DAX measures
 - add a compact Power BI report
-- reconcile report measures to the committed Gold and SQL analytics evidence
-- capture model and report screenshots
+- reconcile report measures to committed Gold, SQL and process evidence
+- capture reviewed model and report screenshots
 
 This stage can be produced locally with Power BI Desktop. It does not by itself prove Fabric execution.
 
-### PR 4 — Real Fabric execution and lifecycle
+### PR 7 — Real Fabric execution and lifecycle
 
 - create the real Fabric Lakehouse
 - import or adapt the tested transformation logic in a Fabric notebook
 - write Bronze, Silver and Gold Delta tables
-- reproduce the local control totals, KPIs and analytical marts
+- reproduce local row counts, KPIs, SQL marts and process controls
 - synchronize real Fabric item definitions
 - verify notebook, Lakehouse and semantic-model bindings
 - document workspace setup, execution and source-control boundaries
@@ -83,11 +90,13 @@ This stage can be produced locally with Power BI Desktop. It does not by itself 
 The Fabric implementation must reproduce the local controls:
 
 ```text
-source rows:        1,000
-silver valid rows:    989
-silver rejected rows:  11
-gold fact rows:        989
-SLA breach rows:        34
+source rows:          1,000
+silver valid rows:      989
+silver rejected rows:    11
+gold fact rows:          989
+SLA breach rows:          34
+process event rows:    3,831
+process variants:          7
 ```
 
-It must also reproduce the committed KPI, foreign-key and analytics reconciliation controls. Any difference must be explained before downstream reporting is accepted.
+It must also reproduce the committed KPI, foreign-key, analytics and process-intelligence reconciliation controls. Any difference must be explained before downstream reporting is accepted.

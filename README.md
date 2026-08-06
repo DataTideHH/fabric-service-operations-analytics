@@ -2,11 +2,11 @@
 
 [![Python quality](https://github.com/DataTideHH/fabric-service-operations-analytics/actions/workflows/python-quality.yml/badge.svg)](https://github.com/DataTideHH/fabric-service-operations-analytics/actions/workflows/python-quality.yml)
 
-**Microsoft Fabric direction · service operations · medallion architecture · SQL analytics · DuckDB · star schema · data quality · Python 3.12 · Parquet · pytest · GitHub Actions**
+**Microsoft Fabric direction · service operations · medallion architecture · SQL analytics · process intelligence · data quality · DuckDB · Python 3.12 · Parquet · pytest · GitHub Actions**
 
-A bounded DataTideHH portfolio project that prepares synthetic IT service-operations data for a later Microsoft Fabric and Power BI implementation.
+A bounded DataTideHH portfolio project that prepares synthetic IT service-operations data for later Microsoft Fabric, Power BI and Process Mining implementations.
 
-The repository now contains a reproducible local Bronze/Silver/Gold pipeline plus a versioned DuckDB SQL analytics layer. It generates a deterministic 90-day operating scenario, separates valid and rejected records, publishes a Gold star schema, defines metric eligibility explicitly and produces reconciled SLA analysis before any cloud or proprietary BI artefact is claimed.
+The repository contains a reproducible local Bronze/Silver/Gold pipeline, a versioned DuckDB SQL analytics layer and a deterministic process-intelligence layer. It generates a controlled 90-day operating scenario, separates valid and rejected records, publishes a Gold star schema, defines metric eligibility explicitly, reconciles SLA analysis and derives a process-mining-ready event log without claiming observed production history.
 
 ## Current status
 
@@ -17,13 +17,17 @@ Local Bronze/Silver/Gold pipeline: implemented
 Local Parquet star schema and KPI evidence: implemented
 DuckDB SQL analytics layer: implemented
 SLA breach analysis and metric contract: implemented
-Cross-platform CI: implemented
+Derived process event log: implemented
+Process variants and transition analysis: implemented
+Escalation and reopening path analysis: implemented
+Cross-platform CI and committed evidence: implemented
 Fabric workspace execution: not yet claimed
 Lakehouse / OneLake objects: not yet created
 Power BI semantic model and report: planned
+Observed production event history: not claimed
 ```
 
-This distinction is deliberate. The project implements and tests transformation and analytical logic locally without presenting hand-written placeholders as executed Fabric or Power BI artefacts.
+This distinction is deliberate. The project implements and tests transformation, analytical and process logic locally without presenting hand-written placeholders as executed Fabric, Power BI or production Process Mining artefacts.
 
 ## Business scenario
 
@@ -31,16 +35,15 @@ The deterministic generator models one customer environment, five operational te
 
 The data supports analysis of:
 
-- request volumes by priority, category and team
+- request volume by priority, category and team
 - SLA compliance, breach counts and breach rates
-- resolution time
-- escalations
-- reopenings
-- open backlog
+- resolution time, escalations, reopenings and backlog
 - team-category concentration patterns
 - data-quality failures before reporting
+- process variants and transition waiting-time concentrations
+- escalated and reopened exception paths
 
-No customer, employee or operational production data is included. The KPI ranges are design constraints for this synthetic scenario, not claimed industry benchmarks.
+No customer, employee or operational production data is included. KPI ranges and process timings are design constraints for this synthetic scenario, not claimed industry benchmarks.
 
 ## Verified pipeline controls
 
@@ -60,7 +63,7 @@ No customer, employee or operational production data is included. The KPI ranges
 | Category dimension rows | 5 |
 | Priority dimension rows | 4 |
 
-The Medallion build fails when Bronze does not reconcile to valid plus rejected rows, when Silver valid records do not reconcile to the Gold fact table, when a Gold foreign key is unresolved or when generated evidence differs from the committed text evidence.
+The Medallion build fails when Bronze does not reconcile to valid plus rejected rows, when Silver valid records do not reconcile to the Gold fact table, when a Gold foreign key is unresolved or when generated evidence differs from committed evidence.
 
 ### Gold KPI evidence
 
@@ -104,17 +107,52 @@ DuckDB reads the generated Gold Parquet tables directly and executes the version
 | Daily service operations | 90 |
 | SLA breach details | 34 |
 
-The analytics manifest verifies that:
+The analytics manifest verifies that grouped closed-ticket populations, breach counts, daily volume and weighted SLA results reconcile to the Gold controls. The layer distinguishes count from rate and identifies concentration patterns without claiming causal root cause.
 
-- all grouped closed-ticket populations reconcile to 833,
-- all grouped breach counts reconcile to 34,
-- daily request volume reconciles to 989,
-- the weighted team SLA rate equals the global 95.92%,
-- every breach row is closed and has a positive resolution overrun.
+The metric contract is stored in [`analytics/metric_contract.json`](analytics/metric_contract.json). Reviewable analysis is stored in [`evidence/sla_analysis.md`](evidence/sla_analysis.md).
 
-The metric contract is stored in [`analytics/metric_contract.json`](analytics/metric_contract.json). The reviewable analysis is stored in [`evidence/sla_analysis.md`](evidence/sla_analysis.md).
+## Process-intelligence layer
 
-The current evidence shows a useful count-versus-rate distinction: `business_apps` has the highest team breach count, while `network_ops` has the highest team breach rate. Application requests have the highest category breach count, while network requests have the highest category breach rate. These are concentration findings, not causal root-cause claims.
+The process layer converts the 989 typed Silver records into an ordered event log with case identifier, activity and timestamp columns.
+
+| Output | Verified rows |
+|---|---:|
+| Process cases | 989 |
+| Event log | 3,831 |
+| Process variants | 7 |
+| Transition types | 7 |
+| Ranked bottleneck candidates | 7 |
+| Exception path types | 3 |
+
+Verified case populations:
+
+```text
+closed cases:          833
+open cases:            156
+escalated cases:        85
+reopened cases:         48
+reopen occurrences:     51
+```
+
+The leading standard variant contains 714 cases:
+
+```text
+ticket_created > team_assigned > resolution_recorded > ticket_closed
+```
+
+The largest derived waiting-time concentration is `team_assigned > resolution_recorded`, covering 758 transitions with an average derived wait of 712.59 minutes.
+
+### Interpretation boundary
+
+The source model contains ticket creation, final closure, escalation status and reopening count. It does not contain observed status-history timestamps. Intermediate events are therefore deterministic scenario derivations marked with:
+
+```text
+event_origin = derived_synthetic_scenario
+```
+
+The event log supports process-analysis practice and later Process Mining integration design. It is not represented as production telemetry and does not support causal root-cause claims.
+
+See [`docs/process-intelligence.md`](docs/process-intelligence.md).
 
 ## Implemented local architecture
 
@@ -135,18 +173,16 @@ contract validation
       v                               v
 Silver valid Parquet             Silver rejected + issue audit
       |
-      v
-Gold star schema + KPI evidence
-      |
-      v
-DuckDB SQL analytics layer
-+ enriched request mart
-+ SLA summaries
-+ daily operations
-+ breach detail
-      |
-      v
-analytics manifest + CSV/Markdown evidence
+      +-------------------------------+
+      |                               |
+      v                               v
+Gold star schema + KPIs          derived process event log
+      |                           + cases / variants
+      v                           + transitions / bottlenecks
+DuckDB SQL analytics             + exception paths
+      |                               |
+      v                               v
+analytics evidence               process evidence
       |
       v
 planned Fabric Lakehouse / Direct Lake / Power BI implementation
@@ -158,6 +194,7 @@ See:
 - [`docs/data-contract.md`](docs/data-contract.md)
 - [`docs/local-medallion-pipeline.md`](docs/local-medallion-pipeline.md)
 - [`docs/sql-analytics-layer.md`](docs/sql-analytics-layer.md)
+- [`docs/process-intelligence.md`](docs/process-intelligence.md)
 - [`docs/fabric-adoption-plan.md`](docs/fabric-adoption-plan.md)
 
 ## Quick start
@@ -170,11 +207,7 @@ py -3.12 -m venv .venv
 python -m pip install --upgrade pip
 python -m pip install -r requirements-dev.txt
 python -m pytest
-```
 
-Generate the source and build both local layers:
-
-```powershell
 python -m service_operations generate `
   --output ".ci-output\service_requests.csv"
 
@@ -187,6 +220,11 @@ python -m service_operations build-analytics `
   --medallion ".ci-output\medallion" `
   --sql-dir "analytics\sql" `
   --output ".ci-output\analytics"
+
+python -m service_operations build-process-intelligence `
+  --input ".ci-output\service_requests.csv" `
+  --contract "contracts\service_requests.contract.json" `
+  --output ".ci-output\process-intelligence"
 ```
 
 ### macOS and Linux
@@ -210,6 +248,11 @@ python -m service_operations build-analytics \
   --medallion .ci-output/medallion \
   --sql-dir analytics/sql \
   --output .ci-output/analytics
+
+python -m service_operations build-process-intelligence \
+  --input .ci-output/service_requests.csv \
+  --contract contracts/service_requests.contract.json \
+  --output .ci-output/process-intelligence
 ```
 
 ## Generated outputs
@@ -236,10 +279,23 @@ analytics/
 ├── sla_by_team_category.parquet
 ├── daily_service_operations.parquet
 ├── sla_breach_details.parquet
-├── sla_by_team.csv
-├── sla_by_category.csv
-├── sla_by_priority.csv
+├── review CSV files
 └── analytics_manifest.json
+
+process-intelligence/
+├── event_log.parquet
+├── event_log.csv
+├── process_cases.parquet
+├── process_cases.csv
+├── process_variants.parquet
+├── process_variants.csv
+├── transition_performance.parquet
+├── transition_performance.csv
+├── bottlenecks.parquet
+├── bottlenecks.csv
+├── exception_paths.parquet
+├── exception_paths.csv
+└── process_intelligence_manifest.json
 ```
 
 ## Deterministic source evidence
@@ -275,30 +331,30 @@ fabric-service-operations-analytics/
 
 The GitHub Actions matrix runs Python 3.12 on Ubuntu 24.04 and Windows 2025. Each job:
 
-1. installs DuckDB, pandas, PyArrow and quality dependencies,
-2. compiles Python sources,
-3. runs Ruff lint and format checks,
-4. runs the complete pytest suite,
-5. generates and fingerprints the deterministic 1,000-row source,
-6. validates the 1,000/989/11 data-quality controls,
-7. builds and verifies every Bronze/Silver/Gold output,
-8. executes every SQL analytics mart,
-9. reconciles grouped outputs to the Gold controls,
-10. compares generated JSON and CSV evidence with the committed evidence,
-11. uploads short-lived Parquet, CSV, JSON and validation artefacts.
+1. installs runtime and quality dependencies
+2. compiles Python sources
+3. runs Ruff lint and format checks
+4. runs the complete pytest suite
+5. generates and fingerprints the deterministic source
+6. validates the 1,000/989/11 data-quality controls
+7. builds and verifies every Bronze/Silver/Gold output
+8. executes and reconciles every SQL analytics mart
+9. builds the event log, variants, transitions and exception paths
+10. compares generated JSON and CSV evidence with committed evidence
+11. uploads short-lived Parquet, CSV, JSON and validation artefacts
 
 ## Scope boundaries
 
 This repository currently does not claim:
 
-- a deployed Fabric Lakehouse,
-- OneLake persistence,
-- Fabric Spark or notebook execution,
-- a Data Factory pipeline,
-- a Fabric SQL analytics endpoint,
-- a Direct Lake semantic model,
-- a Power BI report,
-- production-scale service-management analytics,
-- causal root-cause analysis.
+- a deployed Fabric Lakehouse or OneLake persistence
+- Fabric Spark, notebook or Data Factory execution
+- a Fabric SQL analytics endpoint
+- a Direct Lake semantic model
+- a completed Power BI report
+- production-scale service-management analytics
+- observed production event history
+- object-centric Process Mining
+- causal process or SLA root-cause analysis
 
-The implemented DuckDB layer is a local, tested SQL analytics contract. It is not a Fabric SQL endpoint or a Power BI semantic model. Later Fabric and Power BI artefacts must reproduce the committed controls and analytical evidence.
+The implemented layers are local, tested analytical contracts. Later Fabric, Power BI and Process Mining artefacts must reproduce the committed controls and evidence rather than replace them with unsupported claims.

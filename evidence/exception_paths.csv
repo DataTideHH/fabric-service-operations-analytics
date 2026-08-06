@@ -1,0 +1,4 @@
+exception_type,case_count,closed_cases,open_cases,average_throughput_minutes,sla_breach_rate,reopen_occurrences
+escalated_only,81,71,10,945.3,0.2254,0
+reopened_only,44,44,0,929.86,0.0682,47
+escalated_and_reopened,4,4,0,558.75,0.25,4

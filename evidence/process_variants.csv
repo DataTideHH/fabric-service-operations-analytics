@@ -1,0 +1,8 @@
+process_variant,case_count,case_share,closed_cases,open_cases,exception_cases,average_throughput_minutes,sla_breach_rate
+ticket_created > team_assigned > resolution_recorded > ticket_closed,714,0.7219,714,0,0,820.72,0.0196
+ticket_created > team_assigned,146,0.1476,0,146,0,,0.0
+ticket_created > team_assigned > escalated > resolution_recorded > ticket_closed,71,0.0718,71,0,71,945.3,0.2254
+ticket_created > team_assigned > resolution_recorded > reopened > resolution_recorded > ticket_closed,41,0.0415,41,0,41,958.0,0.0732
+ticket_created > team_assigned > escalated,10,0.0101,0,10,10,,0.0
+ticket_created > team_assigned > escalated > resolution_recorded > reopened > resolution_recorded > ticket_closed,4,0.004,4,0,4,558.75,0.25
+ticket_created > team_assigned > resolution_recorded > reopened > resolution_recorded > reopened > resolution_recorded > ticket_closed,3,0.003,3,0,3,545.33,0.0

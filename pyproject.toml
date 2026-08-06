@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fabric-service-operations-analytics"
-version = "0.2.2"
-description = "Tested local Medallion and SQL analytics pipeline for a Microsoft Fabric service-operations portfolio project."
+version = "0.3.0"
+description = "Tested local Medallion, SQL analytics and process-intelligence pipeline for a Microsoft Fabric service-operations portfolio project."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

@@ -1,0 +1,8 @@
+source_activity,target_activity,case_count,average_wait_minutes,median_wait_minutes,p90_wait_minutes
+ticket_created,team_assigned,989,14.18,15.0,15.0
+resolution_recorded,ticket_closed,833,83.58,69.4,171.36
+team_assigned,resolution_recorded,758,712.59,601.95,1458.03
+team_assigned,escalated,85,450.94,339.15,1046.28
+escalated,resolution_recorded,75,411.04,312.75,888.75
+reopened,resolution_recorded,51,190.3,126.28,381.26
+resolution_recorded,reopened,51,86.85,60.2,173.3
