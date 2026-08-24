@@ -8,6 +8,10 @@ A bounded DataTideHH portfolio project that prepares synthetic IT service-operat
 
 The repository contains a reproducible local Bronze/Silver/Gold pipeline, a versioned DuckDB SQL analytics layer and a deterministic process-intelligence layer. It generates a controlled 90-day operating scenario, separates valid and rejected records, publishes a Gold star schema, defines metric eligibility explicitly, reconciles SLA analysis and derives a process-mining-ready event log without claiming observed production history.
 
+## Related writing
+
+[**The Dashboard Wasn't the Hard Part: Why KPI Definitions Matter**](https://medium.com/@tobiaswietelmann/the-dashboard-wasnt-the-hard-part-why-kpi-definitions-matter-c762cebae500) — a project-based article on KPI definitions, denominator choices, count vs. rate, aggregation effects, data quality and analytical validation using reproducible outputs from this repository.
+
 ## Current status
 
 ```text
