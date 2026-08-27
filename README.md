@@ -161,6 +161,8 @@ See [`docs/process-intelligence.md`](docs/process-intelligence.md).
 
 ## Governed AI handoff
 
+![Governed versioned analytics handoff from the producer repository to the AI orchestration consumer](docs/images/governed-analytics-handoff.svg)
+
 The repository produces [`ai_service_operations_snapshot.json`](evidence/ai_service_operations_snapshot.json), a schema-validated and fingerprinted contract for [`service-operations-ai-orchestration`](https://github.com/DataTideHH/service-operations-ai-orchestration). It contains the reconciled overall and team SLA evidence, exact denominator semantics, source revision and interpretation boundary. The downstream repository consumes a committed copy, so neither build has a runtime network dependency.
 
 ```powershell

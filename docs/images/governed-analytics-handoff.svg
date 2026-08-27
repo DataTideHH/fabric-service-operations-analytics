@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 392" width="1000" height="392" role="img" aria-labelledby="t d" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <title id="t">Governed analytics handoff between the producer and consumer repositories</title>
+  <desc id="d">The producer repository fabric-service-operations-analytics reconciles analytics evidence, runs a handoff build step and validates it against a JSON Schema. The result is a versioned JSON snapshot that carries the contract version, source revision, metric definitions with explicit denominators, and an interpretation boundary. An exact copy of that snapshot is committed in the consumer repository service-operations-ai-orchestration, which validates it at startup, reconciles the figures independently, exposes exactly two read-only Spring AI tools, and runs an evaluation harness. Both repositories build independently with no runtime dependency on each other.</desc>
+
+  <defs>
+    <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#7a8b99"/>
+    </marker>
+  </defs>
+
+  <!-- ============ column headers ============ -->
+  <g>
+    <rect x="20" y="16" width="300" height="52" rx="8" fill="#0b2e4f"/>
+    <text x="170" y="37" text-anchor="middle" fill="#7fb4cc" font-size="12.5" letter-spacing="2.2">PRODUCER</text>
+    <text x="170" y="57" text-anchor="middle" fill="#ffffff" font-size="14.5">fabric-service-operations-analytics</text>
+
+    <rect x="350" y="16" width="300" height="52" rx="8" fill="#40566b"/>
+    <text x="500" y="37" text-anchor="middle" fill="#c3d3de" font-size="12.5" letter-spacing="2.2">GOVERNED CONTRACT</text>
+    <text x="500" y="57" text-anchor="middle" fill="#ffffff" font-size="14.5">versioned JSON snapshot</text>
+
+    <rect x="680" y="16" width="300" height="52" rx="8" fill="#0b2e4f"/>
+    <text x="830" y="37" text-anchor="middle" fill="#7fb4cc" font-size="12.5" letter-spacing="2.2">CONSUMER</text>
+    <text x="830" y="57" text-anchor="middle" fill="#ffffff" font-size="14.5">service-operations-ai-orchestration</text>
+  </g>
+
+  <!-- ============ producer steps ============ -->
+  <g fill="#0b92b6">
+    <rect x="20" y="90" width="300" height="54" rx="8"/>
+    <rect x="20" y="160" width="300" height="54" rx="8"/>
+    <rect x="20" y="230" width="300" height="54" rx="8"/>
+  </g>
+  <g text-anchor="middle" fill="#ffffff" font-size="15">
+    <text x="170" y="122">Reconciled analytics evidence</text>
+    <text x="170" y="192">Handoff build step</text>
+    <text x="170" y="262">JSON Schema validation</text>
+  </g>
+  <g stroke="#7a8b99" stroke-width="2" marker-end="url(#ar)">
+    <line x1="170" y1="146" x2="170" y2="156"/>
+    <line x1="170" y1="216" x2="170" y2="226"/>
+  </g>
+
+  <!-- ============ contract ============ -->
+  <rect x="350" y="90" width="300" height="194" rx="8" fill="#40566b"/>
+  <text x="500" y="120" text-anchor="middle" fill="#ffffff" font-size="14.5">ai_service_operations_snapshot.json</text>
+  <line x1="374" y1="134" x2="626" y2="134" stroke="#7a8b99" stroke-width="1"/>
+  <g fill="#e4ecf2" font-size="14">
+    <text x="374" y="160">· exact copy committed in both repos</text>
+    <text x="374" y="186">· contract version and source revision</text>
+    <text x="374" y="212">· metric definitions with denominators</text>
+    <text x="374" y="238">· explicit interpretation boundary</text>
+    <text x="374" y="264">· no runtime network dependency</text>
+  </g>
+
+  <!-- ============ consumer steps ============ -->
+  <g fill="#16456e">
+    <rect x="680" y="90" width="300" height="42" rx="8"/>
+    <rect x="680" y="140" width="300" height="42" rx="8"/>
+    <rect x="680" y="190" width="300" height="42" rx="8"/>
+    <rect x="680" y="240" width="300" height="44" rx="8"/>
+  </g>
+  <g text-anchor="middle" fill="#ffffff" font-size="15">
+    <text x="830" y="117">Startup schema validation</text>
+    <text x="830" y="167">Independent reconciliation</text>
+    <text x="830" y="217">Two read-only Spring AI tools</text>
+    <text x="830" y="268">Evaluation harness</text>
+  </g>
+  <g stroke="#7a8b99" stroke-width="2" marker-end="url(#ar)">
+    <line x1="830" y1="134" x2="830" y2="136"/>
+    <line x1="830" y1="184" x2="830" y2="186"/>
+    <line x1="830" y1="234" x2="830" y2="236"/>
+  </g>
+
+  <!-- ============ horizontal handoff arrows ============ -->
+  <g stroke="#7a8b99" stroke-width="2.5" marker-end="url(#ar)">
+    <line x1="322" y1="187" x2="346" y2="187"/>
+    <line x1="652" y1="187" x2="676" y2="187"/>
+  </g>
+
+  <!-- ============ footer ============ -->
+  <rect x="20" y="318" width="960" height="44" rx="8" fill="#40566b"/>
+  <text x="500" y="345" text-anchor="middle" fill="#ffffff" font-size="14.5">Same governed evidence · independently buildable repositories · no live cross-repository dependency</text>
+</svg>
