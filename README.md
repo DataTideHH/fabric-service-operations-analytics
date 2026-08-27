@@ -25,6 +25,7 @@ Derived process event log: implemented
 Process variants and transition analysis: implemented
 Escalation and reopening path analysis: implemented
 Cross-platform CI and committed evidence: implemented
+Governed downstream AI handoff: implemented
 Fabric workspace execution: not yet claimed
 Lakehouse / OneLake objects: not yet created
 Power BI semantic model and report: planned
@@ -157,6 +158,24 @@ event_origin = derived_synthetic_scenario
 The event log supports process-analysis practice and later Process Mining integration design. It is not represented as production telemetry and does not support causal root-cause claims.
 
 See [`docs/process-intelligence.md`](docs/process-intelligence.md).
+
+## Governed AI handoff
+
+The repository produces [`ai_service_operations_snapshot.json`](evidence/ai_service_operations_snapshot.json), a schema-validated and fingerprinted contract for [`service-operations-ai-orchestration`](https://github.com/DataTideHH/service-operations-ai-orchestration). It contains the reconciled overall and team SLA evidence, exact denominator semantics, source revision and interpretation boundary. The downstream repository consumes a committed copy, so neither build has a runtime network dependency.
+
+```powershell
+python -m service_operations build-ai-handoff `
+  --analytics-manifest evidence/analytics_manifest.json `
+  --team-evidence evidence/sla_by_team.csv `
+  --metric-contract analytics/metric_contract.json `
+  --schema contracts/ai-service-operations-snapshot.schema.json `
+  --source-revision 0a6c4ebffe366d7133215634d836a5d9b102e7fb `
+  --period-start 2026-01-01 `
+  --period-end 2026-03-31 `
+  --output evidence/ai_service_operations_snapshot.json
+```
+
+See [`docs/ai-handoff-contract.md`](docs/ai-handoff-contract.md).
 
 ## Implemented local architecture
 

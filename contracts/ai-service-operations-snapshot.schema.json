@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/DataTideHH/fabric-service-operations-analytics/contracts/ai-service-operations-snapshot.schema.json",
+  "title": "Governed service-operations AI snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "contractVersion",
+    "snapshotId",
+    "asOfDate",
+    "reportingPeriod",
+    "producer",
+    "source",
+    "metric",
+    "overall",
+    "comparisonDimension",
+    "groups",
+    "interpretationBoundary"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "contractVersion": { "const": "2.0.0" },
+    "snapshotId": { "type": "string", "minLength": 1 },
+    "asOfDate": { "type": "string", "format": "date" },
+    "reportingPeriod": { "$ref": "#/$defs/reportingPeriod" },
+    "producer": { "$ref": "#/$defs/producer" },
+    "source": { "$ref": "#/$defs/source" },
+    "metric": { "$ref": "#/$defs/metric" },
+    "overall": { "$ref": "#/$defs/slaEvidence" },
+    "comparisonDimension": { "const": "assigned_team" },
+    "groups": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/groupEvidence" }
+    },
+    "interpretationBoundary": { "$ref": "#/$defs/interpretationBoundary" }
+  },
+  "$defs": {
+    "reportingPeriod": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["startDate", "endDate", "label"],
+      "properties": {
+        "startDate": { "type": "string", "format": "date" },
+        "endDate": { "type": "string", "format": "date" },
+        "label": { "type": "string", "minLength": 1 }
+      }
+    },
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["application", "version"],
+      "properties": {
+        "application": { "const": "fabric-service-operations-analytics" },
+        "version": { "type": "string", "minLength": 1 }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "revision", "scenario", "ingestionBatchId", "resourceFingerprints"],
+      "properties": {
+        "repository": { "type": "string", "format": "uri" },
+        "revision": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "scenario": { "type": "string", "minLength": 1 },
+        "ingestionBatchId": { "type": "string", "minLength": 1 },
+        "resourceFingerprints": {
+          "type": "object",
+          "minProperties": 3,
+          "additionalProperties": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+        }
+      }
+    },
+    "metric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "definition", "eligiblePopulation", "breachDefinition", "breachEligiblePopulation"],
+      "properties": {
+        "name": { "const": "sla_attainment_rate" },
+        "definition": { "type": "string", "minLength": 1 },
+        "eligiblePopulation": { "type": "string", "minLength": 1 },
+        "breachDefinition": { "type": "string", "minLength": 1 },
+        "breachEligiblePopulation": { "type": "string", "minLength": 1 }
+      }
+    },
+    "slaEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["eligibleOperations", "withinSlaOperations", "breachedOperations", "slaAttainmentRatePercent", "slaBreachRatePercent"],
+      "properties": {
+        "eligibleOperations": { "type": "integer", "minimum": 1 },
+        "withinSlaOperations": { "type": "integer", "minimum": 0 },
+        "breachedOperations": { "type": "integer", "minimum": 0 },
+        "slaAttainmentRatePercent": { "type": "number", "minimum": 0, "maximum": 100 },
+        "slaBreachRatePercent": { "type": "number", "minimum": 0, "maximum": 100 }
+      }
+    },
+    "groupEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["group", "eligibleOperations", "withinSlaOperations", "breachedOperations", "slaAttainmentRatePercent", "slaBreachRatePercent"],
+      "properties": {
+        "group": { "type": "string", "minLength": 1 },
+        "eligibleOperations": { "type": "integer", "minimum": 1 },
+        "withinSlaOperations": { "type": "integer", "minimum": 0 },
+        "breachedOperations": { "type": "integer", "minimum": 0 },
+        "slaAttainmentRatePercent": { "type": "number", "minimum": 0, "maximum": 100 },
+        "slaBreachRatePercent": { "type": "number", "minimum": 0, "maximum": 100 }
+      }
+    },
+    "interpretationBoundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["supportedInterpretations", "unsupportedInterpretations", "requiredLanguage"],
+      "properties": {
+        "supportedInterpretations": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "unsupportedInterpretations": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "requiredLanguage": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

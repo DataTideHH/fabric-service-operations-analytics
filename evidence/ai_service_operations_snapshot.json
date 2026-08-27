@@ -1,0 +1,97 @@
+{
+  "asOfDate": "2026-03-31",
+  "comparisonDimension": "assigned_team",
+  "contractVersion": "2.0.0",
+  "groups": [
+    {
+      "breachedOperations": 9,
+      "eligibleOperations": 129,
+      "group": "network_ops",
+      "slaAttainmentRatePercent": 93.02,
+      "slaBreachRatePercent": 6.98,
+      "withinSlaOperations": 120
+    },
+    {
+      "breachedOperations": 7,
+      "eligibleOperations": 114,
+      "group": "data_platform",
+      "slaAttainmentRatePercent": 93.86,
+      "slaBreachRatePercent": 6.14,
+      "withinSlaOperations": 107
+    },
+    {
+      "breachedOperations": 10,
+      "eligibleOperations": 209,
+      "group": "business_apps",
+      "slaAttainmentRatePercent": 95.22,
+      "slaBreachRatePercent": 4.78,
+      "withinSlaOperations": 199
+    },
+    {
+      "breachedOperations": 7,
+      "eligibleOperations": 234,
+      "group": "service_desk",
+      "slaAttainmentRatePercent": 97.01,
+      "slaBreachRatePercent": 2.99,
+      "withinSlaOperations": 227
+    },
+    {
+      "breachedOperations": 1,
+      "eligibleOperations": 147,
+      "group": "workplace",
+      "slaAttainmentRatePercent": 99.32,
+      "slaBreachRatePercent": 0.68,
+      "withinSlaOperations": 146
+    }
+  ],
+  "interpretationBoundary": {
+    "requiredLanguage": "Use observational language such as 'the snapshot shows'; explicitly say when causality or an ambiguous ranking is not supported.",
+    "supportedInterpretations": [
+      "Describe observed SLA attainment and breach rates in this snapshot.",
+      "Compare resolver teams using the same governed metric definition.",
+      "Identify the highest or lowest observed rate when the metric is explicit."
+    ],
+    "unsupportedInterpretations": [
+      "The analytics layer identifies concentration and association patterns. It does not establish root cause because the source model contains no cause codes, waiting-state history, reassignment events or supplier dependencies.",
+      "Predict future performance from this snapshot.",
+      "Infer individual or team quality, effort, or accountability.",
+      "Treat 'worst' as well-defined when the comparison metric is not stated."
+    ]
+  },
+  "metric": {
+    "breachDefinition": "sla_breaches / closed_requests",
+    "breachEligiblePopulation": "accepted requests with status = closed",
+    "definition": "sla_met_requests / closed_requests",
+    "eligiblePopulation": "accepted requests with status = closed",
+    "name": "sla_attainment_rate"
+  },
+  "overall": {
+    "breachedOperations": 34,
+    "eligibleOperations": 833,
+    "slaAttainmentRatePercent": 95.92,
+    "slaBreachRatePercent": 4.08,
+    "withinSlaOperations": 799
+  },
+  "producer": {
+    "application": "fabric-service-operations-analytics",
+    "version": "0.4.0"
+  },
+  "reportingPeriod": {
+    "endDate": "2026-03-31",
+    "label": "2026-01-01/2026-03-31",
+    "startDate": "2026-01-01"
+  },
+  "schemaVersion": "1.0.0",
+  "snapshotId": "fsoa-2026-01-01-2026-03-31-v1",
+  "source": {
+    "ingestionBatchId": "292ed8fb2857e392",
+    "repository": "https://github.com/DataTideHH/fabric-service-operations-analytics",
+    "resourceFingerprints": {
+      "analytics/metric_contract.json": "d8196ed1d6feebbf9f033fe6f9f3bfd297f56445a3f6b6716e67c6c446ac6fac",
+      "evidence/analytics_manifest.json": "7ec3aeab96962ec84d715eb32984993f7c579cf99eacbca07216562f2af8a59b",
+      "evidence/sla_by_team.csv": "aad6680a0f65c6c1b90daf2736da46eb8bcf222f00514b94d6dcf0af10211f4e"
+    },
+    "revision": "0a6c4ebffe366d7133215634d836a5d9b102e7fb",
+    "scenario": "deterministic-synthetic-service-operations"
+  }
+}
