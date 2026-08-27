@@ -181,6 +181,34 @@ jobs:
 
           print("SQL analytics controls and evidence reconciliation passed.")
 
+      - name: Build governed AI handoff
+        run: >-
+          python -m service_operations build-ai-handoff
+          --analytics-manifest .ci-output/analytics/analytics_manifest.json
+          --team-evidence .ci-output/analytics/sla_by_team.csv
+          --metric-contract analytics/metric_contract.json
+          --schema contracts/ai-service-operations-snapshot.schema.json
+          --source-revision 0a6c4ebffe366d7133215634d836a5d9b102e7fb
+          --period-start 2026-01-01
+          --period-end 2026-03-31
+          --output .ci-output/ai_service_operations_snapshot.json
+
+      - name: Verify committed AI handoff evidence
+        shell: python
+        run: |
+          import json
+          from pathlib import Path
+
+          generated = json.loads(
+              Path(".ci-output/ai_service_operations_snapshot.json").read_text(encoding="utf-8")
+          )
+          committed = json.loads(
+              Path("evidence/ai_service_operations_snapshot.json").read_text(encoding="utf-8")
+          )
+          if generated != committed:
+              raise SystemExit("Generated AI handoff differs from committed evidence.")
+          print("Governed AI handoff schema and evidence reconciliation passed.")
+
       - name: Build local process-intelligence layer
         run: >-
           python -m service_operations build-process-intelligence

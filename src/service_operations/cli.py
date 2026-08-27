@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import argparse
+from datetime import date
 from pathlib import Path
 
+from service_operations.ai_handoff import build_ai_handoff, write_ai_handoff
 from service_operations.analytics import run_analytics
 from service_operations.generator import DEFAULT_RECORD_COUNT, generate_dataframe, write_dataset
 from service_operations.medallion import run_medallion
@@ -52,6 +54,19 @@ def _build_parser() -> argparse.ArgumentParser:
     process_intelligence.add_argument("--contract", type=Path, required=True)
     process_intelligence.add_argument("--output", type=Path, required=True)
 
+    ai_handoff = subparsers.add_parser(
+        "build-ai-handoff",
+        help="Build the governed downstream AI snapshot from analytics evidence.",
+    )
+    ai_handoff.add_argument("--analytics-manifest", type=Path, required=True)
+    ai_handoff.add_argument("--team-evidence", type=Path, required=True)
+    ai_handoff.add_argument("--metric-contract", type=Path, required=True)
+    ai_handoff.add_argument("--schema", type=Path, required=True)
+    ai_handoff.add_argument("--source-revision", required=True)
+    ai_handoff.add_argument("--period-start", type=date.fromisoformat, required=True)
+    ai_handoff.add_argument("--period-end", type=date.fromisoformat, required=True)
+    ai_handoff.add_argument("--output", type=Path, required=True)
+
     return parser
 
 
@@ -83,6 +98,19 @@ def main(argv: list[str] | None = None) -> int:
         manifest_path = run_process_intelligence(args.input, args.contract, args.output)
         print(f"Wrote reconciled process-intelligence outputs to {args.output}")
         print(f"manifest={manifest_path}")
+        return 0
+
+    if args.command == "build-ai-handoff":
+        snapshot = build_ai_handoff(
+            args.analytics_manifest,
+            args.team_evidence,
+            args.metric_contract,
+            source_revision=args.source_revision,
+            period_start=args.period_start,
+            period_end=args.period_end,
+        )
+        output = write_ai_handoff(snapshot, args.output, args.schema)
+        print(f"Wrote validated AI handoff snapshot to {output}")
         return 0
 
     result = validate_file(args.input, args.contract)

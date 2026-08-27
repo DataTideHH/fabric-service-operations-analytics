@@ -1,5 +1,10 @@
 """Service-operations analytics pipeline for the Microsoft Fabric portfolio project."""
 
+from service_operations.ai_handoff import (
+    build_ai_handoff,
+    validate_ai_handoff,
+    write_ai_handoff,
+)
 from service_operations.analytics import (
     AnalyticsTables,
     build_analytics,
@@ -30,6 +35,7 @@ __all__ = [
     "ProcessIntelligenceTables",
     "ValidationResult",
     "build_analytics",
+    "build_ai_handoff",
     "build_bronze",
     "build_medallion",
     "build_process_intelligence",
@@ -40,8 +46,10 @@ __all__ = [
     "run_medallion",
     "run_process_intelligence",
     "validate_dataframe",
+    "validate_ai_handoff",
     "validate_file",
     "write_analytics",
+    "write_ai_handoff",
     "write_dataset",
     "write_medallion",
     "write_process_intelligence",
