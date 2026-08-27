@@ -21,8 +21,10 @@ def _read_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def _sha256(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+def _sha256_text(path: Path) -> str:
+    """Fingerprint governed text independent of the checkout newline convention."""
+    normalized = path.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return hashlib.sha256(normalized).hexdigest()
 
 
 def _percent(numerator: int, denominator: int) -> float:
@@ -117,9 +119,9 @@ def build_ai_handoff(
             "scenario": "deterministic-synthetic-service-operations",
             "ingestionBatchId": manifest["source_ingestion_batch_id"],
             "resourceFingerprints": {
-                "analytics/metric_contract.json": _sha256(contract_path),
-                "evidence/analytics_manifest.json": _sha256(manifest_path),
-                "evidence/sla_by_team.csv": _sha256(team_path),
+                "analytics/metric_contract.json": _sha256_text(contract_path),
+                "evidence/analytics_manifest.json": _sha256_text(manifest_path),
+                "evidence/sla_by_team.csv": _sha256_text(team_path),
             },
         },
         "metric": {

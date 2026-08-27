@@ -59,6 +59,26 @@ def test_committed_ai_handoff_matches_generated_evidence() -> None:
     assert _snapshot() == json.loads(COMMITTED_HANDOFF.read_text(encoding="utf-8"))
 
 
+def test_resource_fingerprints_are_independent_of_checkout_newlines(tmp_path: Path) -> None:
+    crlf_paths = []
+    for source in (ANALYTICS_MANIFEST, TEAM_EVIDENCE, METRIC_CONTRACT):
+        destination = tmp_path / source.name
+        destination.write_bytes(source.read_bytes().replace(b"\n", b"\r\n"))
+        crlf_paths.append(destination)
+
+    crlf_snapshot = build_ai_handoff(
+        *crlf_paths,
+        source_revision=SOURCE_REVISION,
+        period_start=date(2026, 1, 1),
+        period_end=date(2026, 3, 31),
+    )
+
+    assert (
+        crlf_snapshot["source"]["resourceFingerprints"]
+        == _snapshot()["source"]["resourceFingerprints"]
+    )
+
+
 def test_ai_handoff_rejects_non_reconciling_team_population(tmp_path: Path) -> None:
     manifest = json.loads(ANALYTICS_MANIFEST.read_text(encoding="utf-8"))
     tampered = copy.deepcopy(manifest)
